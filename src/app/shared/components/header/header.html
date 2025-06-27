@@ -1,0 +1,38 @@
+<mat-toolbar class="navbar modern-navbar">
+    <div class="header-left">
+      <div class="logo-glass">
+        <span class="footer-icon">🍺</span>
+      </div>
+      <span class="brand-modern">Project Bar</span>
+    </div>
+    <div class="header-center">
+      <button mat-button class="glass-btn" [routerLink]="['/orders']">
+        Órdenes
+      </button>
+      <button mat-button class="glass-btn" [routerLink]="['/products']">
+        Productos
+      </button>
+      <button mat-button class="glass-btn" [routerLink]="['/inventory']">
+        Inventario
+      </button>
+      <button mat-button class="glass-btn" [routerLink]="['/bills']">
+        Facturación
+      </button>
+    </div>
+    <div class="header-right">
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <img
+          src="https://i.pravatar.cc/40?img=3"
+          alt="Usuario"
+          width="40"
+          height="40"
+          style="border-radius: 50%; object-fit: cover"
+        />
+      </button>
+      <mat-menu #userMenu="matMenu" class="user-menu-modern">
+        <button mat-menu-item>Perfil</button>
+        <button mat-menu-item>Cerrar sesión</button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+  

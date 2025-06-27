@@ -1,0 +1,134 @@
+.modern-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: linear-gradient(90deg, #3e2723 0%, #795548 100%);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 24px rgba(62, 39, 35, 0.18);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  transition: background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s;
+}
+
+.modern-navbar.scrolled {
+  background: linear-gradient(90deg, #6d4c41cc 0%, #bcaaa4cc 100%);
+  box-shadow: 0 2px 12px #79554855;
+  backdrop-filter: blur(10px) brightness(1.15);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo-glass {
+  background: rgba(255, 224, 130, 0.18);
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 2px 12px #ffe08255;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.brand-modern {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: #ffe082;
+  text-shadow: 0 2px 8px #000a, 0 1px 2px #0006;
+  margin-right: 24px;
+}
+
+.header-center {
+  display: flex;
+  gap: 16px;
+  margin-left: 48px;
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fffbe7;
+  font-weight: 500;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 8px #0001;
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 224, 130, 0.18);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  padding: 6px 18px;
+}
+.glass-btn:hover {
+  background: rgba(255, 224, 130, 0.25);
+  color: #3e2723;
+  box-shadow: 0 4px 16px #ffe08255;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-btn {
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 2px 8px #ffe08255;
+  background: rgba(255, 224, 130, 0.1);
+  border: 2px solid #ffe082;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.avatar-btn:hover {
+  box-shadow: 0 4px 16px #ffe08299;
+  border: 2px solid #fffbe7;
+}
+
+.avatar-modern {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffe082;
+  box-shadow: 0 1px 8px #ffe08255;
+  background: #fffbe7;
+}
+
+.user-menu-modern .mat-menu-content {
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #79554855;
+  background: rgba(62, 39, 35, 0.98);
+  color: #fffbe7;
+}
+
+@media (max-width: 900px) {
+  .header-center {
+    gap: 6px;
+    margin-left: 12px;
+  }
+  .brand-modern {
+    font-size: 1.2rem;
+  }
+  .modern-navbar {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-center {
+    display: none;
+  }
+  .brand-modern {
+    font-size: 1rem;
+  }
+  .logo-modern {
+    width: 28px;
+    height: 28px;
+  }
+  .avatar-modern {
+    width: 28px;
+    height: 28px;
+  }
+}

@@ -1,0 +1,49 @@
+.bar-footer {
+  background: linear-gradient(90deg, #3e2723 0%, #795548 100%);
+  color: #fffbe7;
+  padding: 20px 0 10px 0;
+  text-align: center;
+  font-family: "Segoe UI", Arial, sans-serif;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.footer-icon {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.footer-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.footer-phrase {
+  font-style: italic;
+  font-size: 1rem;
+  color: #ffe082;
+}
+
+.footer-copyright {
+  font-size: 0.9rem;
+  color: #d7ccc8;
+}
+
+@media (min-width: 600px) {
+  .footer-content {
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+  }
+  .footer-icon {
+    margin-bottom: 0;
+  }
+}

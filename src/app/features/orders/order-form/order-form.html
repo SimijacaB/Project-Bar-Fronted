@@ -1,0 +1,95 @@
+<!-- Modal de nueva orden -->
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Nueva Orden</h2>
+      <button mat-icon-button (click)="onClose()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <mat-card class="form-card">
+        <mat-card-content>
+          <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nombre del Cliente</mat-label>
+                <input
+                  matInput
+                  formControlName="clientName"
+                  placeholder="Ingrese el nombre del cliente"
+                />
+                @if (orderForm.get('clientName')?.hasError('required')) {
+                <mat-error> El nombre del cliente es requerido </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Número de Mesa</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="tableNumber"
+                  placeholder="Ingrese el número de mesa"
+                />
+                @if (orderForm.get('tableNumber')?.hasError('required')) {
+                <mat-error> El número de mesa es requerido </mat-error>
+                } @if (orderForm.get('tableNumber')?.hasError('min')) {
+                <mat-error> El número de mesa debe ser mayor a 0 </mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nombre del Mesero</mat-label>
+                <input
+                  matInput
+                  formControlName="waiterUserName"
+                  placeholder="Ingrese el nombre del mesero"
+                />
+                @if (orderForm.get('waiterUserName')?.hasError('required')) {
+                <mat-error> El nombre del mesero es requerido </mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field
+                appearance="outline"
+                class="form-field full-width"
+              >
+                <mat-label>Notas (Opcional)</mat-label>
+                <textarea
+                  matInput
+                  formControlName="notes"
+                  placeholder="Agregue notas adicionales para la orden"
+                  rows="3"
+                ></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" mat-button (click)="onClose()">
+                Cancelar
+              </button>
+              <button type="button" mat-button (click)="resetForm()">
+                Limpiar
+              </button>
+              <button
+                type="submit"
+                mat-raised-button
+                color="primary"
+                [disabled]="orderForm.invalid"
+              >
+                <mat-icon>add</mat-icon>
+                Crear Orden
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

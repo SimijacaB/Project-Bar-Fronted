@@ -1,0 +1,134 @@
+.home-container {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(120deg, #6d4c41 0%, #bcaaa4 100%);
+  border-radius: 16px;
+  margin-top: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 32px 16px;
+}
+
+.home-welcome {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.home-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.home-slogan {
+  color: #ffe082;
+  font-size: 1.2rem;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.home-actions {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.home-actions button {
+  min-width: 160px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+}
+
+@media (max-width: 600px) {
+  .home-container {
+    padding: 16px 4px;
+    margin-top: 16px;
+  }
+  .home-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .home-actions button {
+    min-width: 120px;
+    font-size: 1rem;
+    padding: 10px 12px;
+  }
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.menu-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 18px 12px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1.5px solid #ffe08244;
+}
+.menu-card:hover {
+  box-shadow: 0 6px 24px #79554833;
+  transform: translateY(-4px) scale(1.03);
+  background: rgba(255, 255, 255, 0.18);
+}
+.menu-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px #ffe08233;
+}
+.menu-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3e2723;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+.menu-card-desc {
+  font-size: 1rem;
+  color: #795548;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .menu-grid {
+    gap: 16px;
+    max-width: 100%;
+  }
+  .menu-card img {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .menu-card {
+    padding: 12px 4px 10px 4px;
+  }
+  .menu-card img {
+    width: 60px;
+    height: 60px;
+  }
+}

@@ -1,0 +1,60 @@
+<div class="orders-container">
+  <!-- Header de la página -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="icon">🍺</span>
+        Gestión de Órdenes
+      </h1>
+      <p class="page-subtitle">
+        Administra las órdenes del bar de manera eficiente
+      </p>
+    </div>
+    <button
+      mat-raised-button
+      color="primary"
+      class="new-order-btn"
+      (click)="onOpenNewOrderModal()"
+    >
+      Nueva Orden
+    </button>
+  </div>
+
+  <!-- Componente de lista de órdenes -->
+  <app-order-list
+    [orders]="orders"
+    [loading]="loading"
+    (viewOrderDetails)="onViewOrderDetails($event)"
+    (changeOrderStatus)="onChangeOrderStatus($event)"
+    (deleteOrder)="onDeleteOrder($event)"
+    (refreshOrders)="onRefreshOrders()"
+  ></app-order-list>
+
+  <!-- Componente de detalles de orden -->
+  <app-order-detail
+    [order]="selectedOrder"
+    [visible]="showOrderDetails"
+    (close)="onCloseOrderDetails()"
+    (refreshOrder)="onRefreshSelectedOrder($event)"
+    (addItem)="onAddItemToOrder($event)"
+    (removeItem)="onRemoveItemFromOrder($event)"
+  ></app-order-detail>
+
+  <!-- Componente de formulario de nueva orden -->
+  @if (showNewOrderModal) {
+  <app-order-form
+    (createOrder)="onCreateOrder($event)"
+    (close)="onCloseNewOrderModal()"
+  ></app-order-form>
+  }
+
+  <!-- Componente de formulario para agregar item -->
+  @if (showAddItemModal && selectedOrder) {
+  <app-order-item-form
+    [orderId]="selectedOrder.id"
+    [orderStatus]="selectedOrder.status"
+    (addItem)="onAddItemToOrderSubmit($event)"
+    (close)="onCloseAddItemModal()"
+  ></app-order-item-form>
+  }
+</div>

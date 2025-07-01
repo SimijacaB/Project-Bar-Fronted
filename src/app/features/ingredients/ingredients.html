@@ -1,0 +1,45 @@
+<div class="ingredients-container">
+  <!-- Header de la página -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="icon">🥘</span>
+        Gestión de Ingredientes
+      </h1>
+      <p class="page-subtitle">
+        Administra los ingredientes del bar de manera eficiente
+      </p>
+    </div>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        class="new-ingredient-btn"
+        (click)="onOpenNewIngredientModal()"
+      >
+        Nuevo Ingrediente
+      </button>
+    </div>
+  </div>
+
+  <!-- Componente de lista de ingredientes -->
+  <app-ingredient-list
+    [ingredients]="ingredients"
+    [loading]="loading"
+    (editIngredient)="onEditIngredient($event)"
+    (deleteIngredient)="onDeleteIngredient($event)"
+    (refreshIngredients)="onRefreshIngredients()"
+  ></app-ingredient-list>
+
+  <!-- Componente de formulario de ingrediente -->
+
+  @if ( showForm) {
+    <app-ingredient-form
+      [ingredient]="selectedIngredient"
+      (save)="onCreateIngredient($event)"
+      (update)="onUpdateIngredient($event)"
+      (close)="onCloseForm()"
+    ></app-ingredient-form>
+  
+    }
+</div>

@@ -1,0 +1,114 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ ingredient ? 'Editar Ingrediente' : 'Nuevo Ingrediente' }}</h2>
+      <button type="button" (click)="close.emit()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form #ingredientForm="ngForm" (ngSubmit)="onSubmit()">
+        <div class="code-preview">
+          Código: {{ localIngredient.code || 'A99-ML-0000I' }}
+        </div>
+
+        <div class="code-group">
+          <select
+            [(ngModel)]="codeLetter"
+            name="codeLetter"
+            required
+            class="code-part"
+            (ngModelChange)="onCodePartChange()"
+          >
+            @for (letter of codeLetters; track letter) {
+            <option [value]="letter">{{ letter }}</option>
+            }
+          </select>
+          <span class="code-sep">-</span>
+          <input
+            type="text"
+            maxlength="2"
+            [(ngModel)]="codeNumber"
+            name="codeNumber"
+            class="code-part"
+            placeholder="00"
+            (ngModelChange)="onCodePartChange()"
+          />
+          <span class="code-sep">-</span>
+          <select
+            [(ngModel)]="codeUnit"
+            name="codeUnit"
+            required
+            class="code-part"
+            (ngModelChange)="onCodePartChange()"
+          >
+            <option [ngValue]="'ML'">ML</option>
+            <option [ngValue]="'ONZ'">ONZ</option>
+            <option [ngValue]="'GR'">GR</option>
+            <option [ngValue]="'UN'">UN</option>
+          </select>
+          <span class="code-sep">-</span>
+          <input
+            type="text"
+            maxlength="4"
+            [(ngModel)]="codeSerial"
+            name="codeSerial"
+            class="code-part"
+            placeholder="0000"
+            (ngModelChange)="onCodePartChange()"
+          />
+          <span class="code-sep">-</span>
+          <select
+            [(ngModel)]="codeType"
+            name="codeType"
+            required
+            class="code-part"
+            (ngModelChange)="onCodePartChange()"
+          >
+            <option value="i">I</option>
+            <option value="p">P</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="code" [(ngModel)]="localIngredient.code" />
+
+        <div class="form-row">
+          <div>
+            <label for="name">Nombre:</label>
+            <input
+              id="name"
+              name="name"
+              [(ngModel)]="localIngredient.name"
+              required
+            />
+          </div>
+          <div>
+            <label for="unitOfMeasure">Unidad de medida:</label>
+            <select
+              id="unitOfMeasure"
+              name="unitOfMeasure"
+              [(ngModel)]="localIngredient.unitOfMeasure"
+              required
+            >
+              <option [ngValue]="'ML'">Mililitros (ML)</option>
+              <option [ngValue]="'ONZ'">Onzas (ONZ)</option>
+              <option [ngValue]="'GR'">Gramos (GR)</option>
+              <option [ngValue]="'UN'">Unidad (UN)</option>
+            </select>
+          </div>
+        </div>
+
+        @if (ingredientForm.submitted && !ingredientForm.valid) {
+        <div class="error-message">
+          Por favor, completa todos los campos obligatorios correctamente.
+        </div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="!ingredientForm.valid">
+            {{ ingredient ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" (click)="close.emit()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

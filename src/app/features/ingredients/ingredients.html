@@ -1,45 +1,48 @@
-<div class="ingredients-container">
+<div class="ingredients-container max-w-5xl mx-auto p-4 md:p-8">
   <!-- Header de la página -->
-  <div class="page-header">
-    <div class="header-content">
-      <h1 class="page-title">
-        <span class="icon">🥘</span>
+  <div class="page-header flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10 p-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl shadow-xl">
+    <div class="header-content flex-1">
+      <h1 class="page-title flex items-center gap-4 text-white text-3xl md:text-4xl font-extrabold mb-2">
+        <span class="icon text-4xl">🥘</span>
         Gestión de Ingredientes
       </h1>
-      <p class="page-subtitle">
+      <p class="page-subtitle text-indigo-100 text-lg font-medium mb-0">
         Administra los ingredientes del bar de manera eficiente
       </p>
     </div>
-    <div class="header-actions">
+    <div class="header-actions flex items-center justify-end">
       <button
         mat-raised-button
         color="primary"
-        class="new-ingredient-btn"
+        class="new-ingredient-btn bg-white/20 border-2 border-white/30 text-white font-bold px-8 py-3 rounded-lg shadow-md hover:bg-white/30 hover:border-white/50 hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
         (click)="onOpenNewIngredientModal()"
       >
-        Nuevo Ingrediente
+        <span class="hidden md:inline">➕</span> Nuevo Ingrediente
       </button>
     </div>
   </div>
 
   <!-- Componente de lista de ingredientes -->
-  <app-ingredient-list
-    [ingredients]="ingredients"
-    [loading]="loading"
-    (editIngredient)="onEditIngredient($event)"
-    (deleteIngredient)="onDeleteIngredient($event)"
-    (refreshIngredients)="onRefreshIngredients()"
-  ></app-ingredient-list>
+  <div class="mb-8">
+    <app-ingredient-list
+      [ingredients]="ingredients"
+      [loading]="loading"
+      (editIngredient)="onEditIngredient($event)"
+      (deleteIngredient)="onDeleteIngredient($event)"
+      (refreshIngredients)="onRefreshIngredients()"
+    ></app-ingredient-list>
+  </div>
 
   <!-- Componente de formulario de ingrediente -->
-
-  @if ( showForm) {
-    <app-ingredient-form
-      [ingredient]="selectedIngredient"
-      (save)="onCreateIngredient($event)"
-      (update)="onUpdateIngredient($event)"
-      (close)="onCloseForm()"
-    ></app-ingredient-form>
-  
-    }
+  @if (showForm) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <app-ingredient-form
+        [ingredient]="selectedIngredient"
+        (save)="onCreateIngredient($event)"
+        (update)="onUpdateIngredient($event)"
+        (close)="onCloseForm()"
+        class="shadow-2xl rounded-xl"
+      ></app-ingredient-form>
+    </div>
+  }
 </div>

@@ -38,9 +38,9 @@ export class Orders implements OnInit {
   showAddItemModal = false;
 
   constructor(
-    private orderService: OrderService,
-    private productService: ProductService,
-    private snackBar: MatSnackBar
+    private readonly orderService: OrderService,
+    private readonly productService: ProductService,
+    private readonly snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {

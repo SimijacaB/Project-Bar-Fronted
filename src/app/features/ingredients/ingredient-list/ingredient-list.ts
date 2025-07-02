@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Ingredient } from '../models';
 import { UnitOfMeasure } from '../../../shared/enums/unit-of-measure';
 
@@ -16,7 +18,9 @@ import { UnitOfMeasure } from '../../../shared/enums/unit-of-measure';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    MatTooltipModule
   ],
   templateUrl: './ingredient-list.html',
   styleUrl: './ingredient-list.css'

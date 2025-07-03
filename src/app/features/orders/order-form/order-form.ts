@@ -24,7 +24,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     templateUrl: './order-form.html',
     styleUrl: './order-form.css'
 })
-export class OrderFormComponent {
+export class OrderForm {
     @Output() createOrder = new EventEmitter<any>();
     @Output() close = new EventEmitter<void>();
 
@@ -57,4 +57,4 @@ export class OrderFormComponent {
     resetForm() {
         this.orderForm.reset();
     }
-} 
+}

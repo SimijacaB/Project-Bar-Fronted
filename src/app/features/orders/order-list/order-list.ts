@@ -30,7 +30,7 @@ import { OrderStatus } from '../../../shared/enums/order-status';
     templateUrl: './order-list.html',
     styleUrl: './order-list.css'
 })
-export class OrderListComponent implements OnInit {
+export class OrderList implements OnInit {
     @Input() orders: Order[] = [];
     @Input() loading = false;
     @Output() viewOrderDetails = new EventEmitter<Order>();
@@ -138,4 +138,4 @@ export class OrderListComponent implements OnInit {
             minimumFractionDigits: 0
         }).format(amount);
     }
-} 
+}

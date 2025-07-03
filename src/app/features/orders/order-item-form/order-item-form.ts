@@ -38,7 +38,7 @@ interface Product {
     templateUrl: './order-item-form.html',
     styleUrl: './order-item-form.css'
 })
-export class OrderItemFormComponent implements OnInit {
+export class OrderItemForm implements OnInit {
     @Input() orderId: number = 0;
     @Input() orderStatus: string = '';
     @Output() addItem = new EventEmitter<any>();

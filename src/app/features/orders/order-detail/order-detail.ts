@@ -27,7 +27,7 @@ import { OrderService } from '../../../core/services/orderService/order-service'
     templateUrl: './order-detail.html',
     styleUrl: './order-detail.css'
 })
-export class OrderDetailComponent {
+export class OrderDetail {
     @Input() order: Order | null = null;
     @Input() visible = false;
     @Output() close = new EventEmitter<void>();

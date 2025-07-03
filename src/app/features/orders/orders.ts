@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { OrderListComponent } from './order-list/order-list';
-import { OrderDetailComponent } from './order-detail/order-detail';
-import { OrderFormComponent } from './order-form/order-form';
-import { OrderItemFormComponent } from './order-item-form/order-item-form';
+import { OrderList } from './order-list/order-list';
+import { OrderDetail } from './order-detail/order-detail';
+import { OrderForm } from './order-form/order-form';
+import { OrderItemForm } from './order-item-form/order-item-form';
 import { Order } from './models';
 import { OrderService } from '../../core/services/orderService/order-service';
 import { ProductService } from '../../core/services/productService/product-service';
@@ -19,10 +19,10 @@ import { ProductService } from '../../core/services/productService/product-servi
     CommonModule,
     MatButtonModule,
     MatIconModule,
-    OrderListComponent,
-    OrderDetailComponent,
-    OrderFormComponent,
-    OrderItemFormComponent
+    OrderList,
+    OrderDetail,
+    OrderForm,
+    OrderItemForm
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css'

@@ -1,34 +1,23 @@
-<div class="orders-container">
-  <!-- Header de la página -->
-  <div class="page-header">
-    <div class="header-content">
-      <h1 class="page-title">
-        <span class="icon">🍺</span>
-        Gestión de Órdenes
-      </h1>
-      <p class="page-subtitle">
-        Administra las órdenes del bar de manera eficiente
-      </p>
-    </div>
-    <button
-      mat-raised-button
-      color="primary"
-      class="new-order-btn"
-      (click)="onOpenNewOrderModal()"
-    >
-      Nueva Orden
-    </button>
-  </div>
 
   <!-- Componente de lista de órdenes -->
-  <app-order-list
-    [orders]="orders"
-    [loading]="loading"
-    (viewOrderDetails)="onViewOrderDetails($event)"
-    (changeOrderStatus)="onChangeOrderStatus($event)"
-    (deleteOrder)="onDeleteOrder($event)"
-    (refreshOrders)="onRefreshOrders()"
-  ></app-order-list>
+<div class="mb-4 flex justify-end">
+  <button
+    mat-raised-button
+    color="primary"
+    class="new-order-btn"
+    (click)="onOpenNewOrderModal()"
+  >
+    Nueva Orden
+  </button>
+</div>
+<app-order-list
+  [orders]="orders"
+  [loading]="loading"
+  (viewOrderDetails)="onViewOrderDetails($event)"
+  (changeOrderStatus)="onChangeOrderStatus($event)"
+  (deleteOrder)="onDeleteOrder($event)"
+  (refreshOrders)="onRefreshOrders()"
+></app-order-list>
 
   <!-- Componente de detalles de orden -->
   <app-order-detail
@@ -57,4 +46,4 @@
     (close)="onCloseAddItemModal()"
   ></app-order-item-form>
   }
-</div>
+

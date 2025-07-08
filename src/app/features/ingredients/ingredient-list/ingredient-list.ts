@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Ingredient } from '../models';
 import { UnitOfMeasure } from '../../../shared/enums/unit-of-measure';
+import { TableComponent } from '../../../shared/components/table-component/table-component';
 
 @Component({
   selector: 'app-ingredient-list',
@@ -20,7 +21,8 @@ import { UnitOfMeasure } from '../../../shared/enums/unit-of-measure';
     MatCardModule,
     MatProgressSpinnerModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    TableComponent
   ],
   templateUrl: './ingredient-list.html',
   styleUrl: './ingredient-list.css'
@@ -31,8 +33,36 @@ export class IngredientList {
   @Output() editIngredient = new EventEmitter<Ingredient>();
   @Output() deleteIngredient = new EventEmitter<string>();
   @Output() refreshIngredients = new EventEmitter<void>();
+  @Output() addIngredient = new EventEmitter<void>();
 
-  displayedColumns: string[] = ['code', 'name', 'unitOfMeasure', 'actions'];
+  columns = [
+    { key: 'code', label: '#', cell: (row: Ingredient) => row.code },
+    { key: 'name', label: 'Nombre', cell: (row: Ingredient) => row.name },
+    { key: 'unitOfMeasure', label: 'Unidad', cell: (row: Ingredient) => this.getUnitOfMeasureLabel(row.unitOfMeasure) }
+  ];
+
+  tableActions = [
+    {
+      icon: 'edit',
+      tooltip: 'Editar ingrediente',
+      action: (row: Ingredient) => this.onEdit(row)
+    },
+    {
+      icon: 'delete',
+      tooltip: 'Eliminar ingrediente',
+      action: (row: Ingredient) => this.onDelete(row.code)
+    }
+  ];
+
+  getUnitOfMeasureLabel(unit: UnitOfMeasure): string {
+    const labels: Record<UnitOfMeasure, string> = {
+      [UnitOfMeasure.ML]: 'Mililitros',
+      [UnitOfMeasure.ONZ]: 'Onzas',
+      [UnitOfMeasure.GR]: 'Gramos',
+      [UnitOfMeasure.UN]: 'Unidades'
+    };
+    return labels[unit] || unit;
+  }
 
   onEdit(ingredient: Ingredient): void {
     this.editIngredient.emit(ingredient);
@@ -46,13 +76,7 @@ export class IngredientList {
     this.refreshIngredients.emit();
   }
 
-  getUnitOfMeasureLabel(unit: UnitOfMeasure): string {
-    const labels: Record<UnitOfMeasure, string> = {
-      [UnitOfMeasure.ML]: 'Mililitros',
-      [UnitOfMeasure.ONZ]: 'Onzas',
-      [UnitOfMeasure.GR]: 'Gramos',
-      [UnitOfMeasure.UN]: 'Unidades'
-    };
-    return labels[unit] || unit;
+  onAddIngredient(): void {
+    this.addIngredient.emit();
   }
 }

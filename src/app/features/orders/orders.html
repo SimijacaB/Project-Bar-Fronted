@@ -1,49 +1,201 @@
-
-  <!-- Componente de lista de órdenes -->
+<!-- Componente de lista de órdenes -->
 <div class="mb-4 flex justify-end">
   <button
-    mat-raised-button
-    color="primary"
-    class="new-order-btn"
-    (click)="onOpenNewOrderModal()"
-  >
+    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-all duration-200"
+    (click)="onOpenNewOrderModal()">
     Nueva Orden
   </button>
 </div>
-<app-order-list
-  [orders]="orders"
-  [loading]="loading"
-  (viewOrderDetails)="onViewOrderDetails($event)"
-  (changeOrderStatus)="onChangeOrderStatus($event)"
-  (deleteOrder)="onDeleteOrder($event)"
-  (refreshOrders)="onRefreshOrders()"
-></app-order-list>
 
-  <!-- Componente de detalles de orden -->
-  <app-order-detail
-    [order]="selectedOrder"
-    [visible]="showOrderDetails"
-    (close)="onCloseOrderDetails()"
-    (refreshOrder)="onRefreshSelectedOrder($event)"
-    (addItem)="onAddItemToOrder($event)"
-    (removeItem)="onRemoveItemFromOrder($event)"
-  ></app-order-detail>
+@if (showNewOrderModal) {
+<div style="background: #fff; border: 2px solid red; padding: 2rem; z-index: 9999;">
+  MODAL ABIERTO
+</div>
+<app-order-form (createOrder)="onCreateOrder($event)" (close)="onCloseNewOrderModal()"></app-order-form>
+}
 
-  <!-- Componente de formulario de nueva orden -->
-  @if (showNewOrderModal) {
-  <app-order-form
-    (createOrder)="onCreateOrder($event)"
-    (close)="onCloseNewOrderModal()"
-  ></app-order-form>
+@if (showOrderDetails && selectedOrder) {
+<app-order-detail [order]="selectedOrder" [visible]="showOrderDetails" (close)="onCloseOrderDetails()"
+  (refreshOrder)="onRefreshSelectedOrder($event)" (addItem)="onAddItemToOrder($event)"
+  (removeItem)="onRemoveItemFromOrder($event)"></app-order-detail>
+}
+
+<!-- Cuando no hay mesa seleccionada, se muestran todas las mesas disponibles -->
+@if (!mesaSeleccionada) {
+<div class="max-w-7xl mx-auto mt-8 grid" style="grid-template-columns: repeat(4, 1fr); gap: 16px;">
+  @for (mesa of mesas; track mesa) {
+  <div style="width: 100%; max-width: 100%; margin: 0 auto;"
+    class="bg-white shadow rounded-xl text-gray-900 flex flex-col items-center overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border p-2 text-xs"
+    [ngClass]="getMesaEstado(mesa) === 'Ocupada' ? 'border-green-500 bg-green-50 hover:bg-green-100' : 'border-gray-200 bg-white hover:bg-blue-50'"
+    (click)="getMesaEstado(mesa) === 'Ocupada' ? seleccionarMesa(mesa) : null">
+    <div class="text-center mt-1">
+      <h2 class="font-semibold text-sm text-blue-700">Mesa {{ mesa }}</h2>
+      <p class="text-[11px] text-gray-500 font-medium">
+        <span [ngClass]="getMesaEstado(mesa) === 'Ocupada' ? 'text-green-700' : 'text-gray-500'">
+          {{ getMesaEstado(mesa) }}
+        </span>
+      </p>
+    </div>
+    <ul class="py-1 mt-1 text-gray-700 flex items-center justify-around w-full text-[11px]">
+      <li class="flex flex-col items-center">
+        <span class="text-[10px] text-gray-500">Órdenes</span>
+        <span class="font-bold text-blue-900">{{ getMesaOrders(mesa).length }}</span>
+      </li>
+      <li class="flex flex-col items-center">
+        <span class="text-[10px] text-gray-500">Estado</span>
+        <span class="font-bold text-blue-900">{{ getMesaEstado(mesa) }}</span>
+      </li>
+    </ul>
+    <div class="p-1 border-t w-full mt-1">
+      <button
+        class="w-full rounded-full bg-blue-600 hover:bg-blue-700 font-semibold text-white px-2 py-1 text-[11px] transition-all duration-200"
+        [disabled]="getMesaEstado(mesa) !== 'Ocupada'">
+        Ver órdenes
+      </button>
+      @if(getMesaEstado(mesa) === 'Disponible'){
+      <div class="text-[10px] text-gray-400 italic mt-1">Sin órdenes hoy</div>
+      }
+    </div>
+  </div>
+  }
+</div>
+}
+
+<!-- Cuando hay una mesa seleccionada, se muestran sus órdenes -->
+@if (mesaSeleccionada) {
+<div class="max-w-7xl mx-auto mt-4">
+  <!-- Encabezado con información de la mesa y botón para volver -->
+  <div class="flex justify-between items-center mb-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+    <div>
+      <h2 class="text-xl font-bold text-blue-800">Mesa {{ mesaSeleccionada }}</h2>
+      <p class="text-sm text-blue-600">{{ tableOrders.length }} órdenes encontradas</p>
+    </div>
+    <button class="btn-secondary flex items-center" (click)="deseleccionarMesa()">
+      <mat-icon class="mr-1">arrow_back</mat-icon> Volver
+    </button>
+  </div>
+
+  <!-- Estado de carga -->
+  @if (loadingTableOrders) {
+  <div class="flex justify-center items-center p-10">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <p class="ml-3 text-blue-500">Cargando órdenes de la mesa...</p>
+  </div>
   }
 
-  <!-- Componente de formulario para agregar item -->
-  @if (showAddItemModal && selectedOrder) {
-  <app-order-item-form
-    [orderId]="selectedOrder.id"
-    [orderStatus]="selectedOrder.status"
-    (addItem)="onAddItemToOrderSubmit($event)"
-    (close)="onCloseAddItemModal()"
-  ></app-order-item-form>
+  <!-- Lista de órdenes de la mesa -->
+  @if (!loadingTableOrders && tableOrders.length > 0) {
+  <div class="grid" style="grid-template-columns: repeat(1, 1fr); gap: 16px;">
+    @for (order of tableOrders; track order.id) {
+    <div class="order-card">
+      <div class="order-header">
+        <div>
+          <h3 class="order-title">Orden #{{ order.id }}</h3>
+          <p class="text-sm text-gray-600">{{ order.date | date:'medium' }}</p>
+        </div>
+        <div>
+          <span class="order-status" [ngClass]="{
+                        'bg-yellow-100 text-yellow-800': order.status === OrderStatus.PENDING,
+                        'bg-blue-100 text-blue-800': order.status === OrderStatus.IN_PROGRESS,
+                        'bg-green-100 text-green-800': order.status === OrderStatus.READY,
+                        'bg-purple-100 text-purple-800': order.status === OrderStatus.DELIVERED,
+                        'bg-red-100 text-red-800': order.status === OrderStatus.CANCELLED
+                      }">
+            {{ order.status }}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div class="mb-3">
+          <p class="text-sm font-medium text-gray-600">Cliente: <span class="text-gray-800">{{ order.clientName || 'No
+              especificado' }}</span></p>
+          <p class="text-sm font-medium text-gray-600">Valor a pagar: <span class="text-gray-800 font-bold">{{
+              order.valueToPay | currency:'COP':'symbol':'1.0-0' }}</span></p>
+        </div>
+
+        <div class="products-section">
+          <h4 class="products-title">Productos:</h4>
+          <ul class="products-list">
+            @for (item of order.orderItemList || []; track item.id) {
+            <li>
+              {{ item.quantity }}x {{ item.productName }} - {{ item.unitPrice * item.quantity |
+              currency:'COP':'symbol':'1.0-0' }}
+            </li>
+            }
+            @if (!order.orderItemList || order.orderItemList.length === 0) {
+            <li class="text-xs text-gray-500 italic">No hay productos en esta orden</li>
+            }
+          </ul>
+        </div>
+
+        <div class="mt-4 flex space-x-2 justify-end">
+          <!-- Botón para ver detalles -->
+          <button class="btn-main flex items-center" (click)="onViewOrderDetails(order)">
+            <mat-icon class="text-sm mr-1">visibility</mat-icon>
+            Detalles
+          </button>
+
+          <!-- Menú desplegable para cambiar estado -->
+          <div class="relative inline-block">
+            <button
+              class="bg-purple-600 hover:bg-purple-700 text-white text-xs py-1 px-3 rounded transition-colors duration-200 flex items-center"
+              [matMenuTriggerFor]="statusMenu">
+              <mat-icon class="text-sm mr-1">swap_horiz</mat-icon>
+              Cambiar estado
+            </button>
+            <mat-menu #statusMenu="matMenu">
+              <button mat-menu-item
+                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.PENDING})"
+                [disabled]="order.status === OrderStatus.PENDING">
+                <span>Pendiente</span>
+              </button>
+              <button mat-menu-item
+                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.IN_PROGRESS})"
+                [disabled]="order.status === OrderStatus.IN_PROGRESS">
+                <span>En Progreso</span>
+              </button>
+              <button mat-menu-item (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.READY})"
+                [disabled]="order.status === OrderStatus.READY">
+                <span>Lista</span>
+              </button>
+              <button mat-menu-item
+                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.DELIVERED})"
+                [disabled]="order.status === OrderStatus.DELIVERED">
+                <span>Entregada</span>
+              </button>
+              <button mat-menu-item
+                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.CANCELLED})"
+                [disabled]="order.status === OrderStatus.CANCELLED">
+                <span>Cancelada</span>
+              </button>
+            </mat-menu>
+          </div>
+
+          <!-- Botón para eliminar orden -->
+          <button
+            class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded transition-colors duration-200 flex items-center"
+            (click)="handleDeleteOrder(order.id)">
+            <mat-icon class="text-sm mr-1">delete</mat-icon>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
   }
 
+  <!-- Mensaje si no hay órdenes -->
+  @if (!loadingTableOrders && tableOrders.length === 0) {
+  <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-6 rounded-lg text-center">
+    <mat-icon class="text-3xl mb-2">info</mat-icon>
+    <p class="font-medium">No se encontraron órdenes para la Mesa {{ mesaSeleccionada }}</p>
+    <button
+      class="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all duration-200"
+      (click)="deseleccionarMesa()">
+      Volver a las mesas
+    </button>
+  </div>
+  }
+</div>
+}

@@ -25,6 +25,9 @@ export class OrderService {
   getOrderById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/find-by-id/${id}`);
   }
+  getOrderByTable(numberTable: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/find-by-table-number/${numberTable}`);
+  }
 
   updateOrder(updateOrderDTO: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/update`, updateOrderDTO);

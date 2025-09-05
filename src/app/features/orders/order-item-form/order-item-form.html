@@ -1,14 +1,23 @@
-<!-- Modal para agregar item a la orden -->
-<div class="modal-overlay" (click)="onClose()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Agregar Producto a la Orden #{{ orderId }}</h2>
-      <button mat-icon-button (click)="onClose()">
+<!-- Modal para agregar item a la orden - Pantalla completa -->
+<div class="modal-overlay-fullscreen">
+  <div class="modal-content-fullscreen">
+    <div class="modal-header-fullscreen">
+      <div class="header-content">
+        <button class="back-button" (click)="onClose()">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Volver a Mesas</span>
+        </button>
+        <h2>
+          <mat-icon>add_shopping_cart</mat-icon>
+          Agregar Producto a la Orden #{{ orderId }}
+        </h2>
+      </div>
+      <button mat-icon-button class="close-button" (click)="onClose()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
 
-    <div class="modal-body">
+    <div class="modal-body-fullscreen">
       <!-- Inicia: Mensaje de estado de orden entregada -->
       @if (isOrderDelivered()) {
       <div class="order-status-warning">
@@ -18,126 +27,165 @@
       }
       <!-- Finaliza -->
       <!-- Se deshabilita agregar producto cuando la orden esté entregada -->
-      <mat-card
-        class="form-card"
-        [ngClass]="{'disabled-form': !isFormEnabled()}"
-      >
-        <mat-card-content>
-          <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
-            <!-- Selector de producto -->
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Producto</mat-label>
-              <mat-select
-                formControlName="productId"
-                (selectionChange)="onProductChange()"
-                [disabled]="loading || !isFormEnabled()"
-              >
-                @if (loading) {
-                <mat-option disabled>
-                  <div style="display: flex; align-items: center; gap: 8px">
-                    <mat-spinner diameter="16"></mat-spinner>
-                    <span>Cargando productos...</span>
-                  </div>
-                </mat-option>
-                } @else if (error) {
-                <mat-option disabled>
-                  <div
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 8px;
-                      color: #f44336;
-                    "
-                  >
-                    <mat-icon>error</mat-icon>
-                    <span>Error al cargar productos</span>
-                  </div>
-                </mat-option>
-                } @else if (products.length === 0) {
-                <mat-option disabled>
-                  <div
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 8px;
-                      color: #ff9800;
-                    "
-                  >
-                    <mat-icon>warning</mat-icon>
-                    <span>No hay productos disponibles</span>
-                  </div>
-                </mat-option>
-                } @else { @for (product of products; track product.id) {
-                <mat-option [value]="product.id">
-                  {{ product.name }}
-                </mat-option>
-                } }
-              </mat-select>
-              @if (itemForm.get('productId')?.hasError('required') &&
-              itemForm.get('productId')?.touched) {
-              <mat-error>Selecciona un producto</mat-error>
-              }
-            </mat-form-field>
+      <div class="form-container-fullscreen">
+        <mat-card
+          class="form-card-fullscreen"
+          [ngClass]="{'disabled-form': !isFormEnabled()}"
+        >
+          <mat-card-content>
+            <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+              <!-- Selector de producto -->
+              <mat-form-field appearance="outline" class="form-field-fullscreen">
+                <mat-label>Producto</mat-label>
+                <mat-select
+                  formControlName="productId"
+                  (selectionChange)="onProductChange()"
+                  [disabled]="loading || !isFormEnabled()"
+                >
+                  @if (loading) {
+                  <mat-option disabled>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <mat-spinner diameter="16"></mat-spinner>
+                      <span>Cargando productos...</span>
+                    </div>
+                  </mat-option>
+                  } @else if (error) {
+                  <mat-option disabled>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        color: #f44336;
+                      "
+                    >
+                      <mat-icon>error</mat-icon>
+                      <span>Error al cargar productos</span>
+                    </div>
+                  </mat-option>
+                  } @else if (products.length === 0) {
+                  <mat-option disabled>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        color: #ff9800;
+                      "
+                    >
+                      <mat-icon>warning</mat-icon>
+                      <span>No hay productos disponibles</span>
+                    </div>
+                  </mat-option>
+                  } @else { @for (product of products; track product.id) {
+                  <mat-option [value]="product.id">
+                    {{ product.name }}
+                  </mat-option>
+                  } }
+                </mat-select>
+                @if (itemForm.get('productId')?.hasError('required') &&
+                itemForm.get('productId')?.touched) {
+                <mat-error>Selecciona un producto</mat-error>
+                }
+              </mat-form-field>
 
-            <!-- Campo de cantidad -->
-            <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Cantidad</mat-label>
-              <input
-                matInput
-                type="number"
-                formControlName="quantity"
-                placeholder="Ingrese la cantidad"
-                min="1"
-                [disabled]="!selectedProduct || !isFormEnabled()"
-                (input)="onQuantityChange()"
-              />
-              @if (itemForm.get('quantity')?.hasError('required') &&
-              itemForm.get('quantity')?.touched) {
-              <mat-error>La cantidad es requerida</mat-error>
-              } @if (itemForm.get('quantity')?.hasError('min') &&
-              itemForm.get('quantity')?.touched) {
-              <mat-error>La cantidad debe ser mayor a 0</mat-error>
-              }
-            </mat-form-field>
+              <!-- Campo de cantidad -->
+              <mat-form-field appearance="outline" class="form-field-fullscreen">
+                <mat-label>Cantidad</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="quantity"
+                  placeholder="Ingrese la cantidad"
+                  min="1"
+                  [disabled]="!selectedProduct || !isFormEnabled()"
+                  (input)="onQuantityChange()"
+                />
+                @if (itemForm.get('quantity')?.hasError('required') &&
+                itemForm.get('quantity')?.touched) {
+                <mat-error>La cantidad es requerida</mat-error>
+                } @if (itemForm.get('quantity')?.hasError('min') &&
+                itemForm.get('quantity')?.touched) {
+                <mat-error>La cantidad debe ser mayor a 0</mat-error>
+                }
+              </mat-form-field>
 
-            <!-- Botón para recargar productos si hay error -->
-            @if (error) {
-            <div class="error-actions">
-              <button
-                type="button"
-                mat-raised-button
-                color="warn"
-                (click)="loadProducts()"
-                [disabled]="!isFormEnabled()"
-              >
-                <mat-icon>refresh</mat-icon>
-                Reintentar cargar productos
-              </button>
-            </div>
-            }
-
-            <div class="form-actions">
-              <button type="button" mat-button (click)="onClose()">
-                Cerrar
-              </button>
-              @if (isFormEnabled()) {
-              <button type="button" mat-button (click)="resetForm()">
-                Limpiar
-              </button>
-              <button
-                type="submit"
-                mat-raised-button
-                color="primary"
-                [disabled]="itemForm.invalid || loading"
-              >
-                <mat-icon>add_shopping_cart</mat-icon>
-                Agregar Producto
-              </button>
+              <!-- Preview del producto seleccionado -->
+              @if (selectedProduct && itemForm.get('quantity')?.value) {
+              <div class="product-preview-fullscreen">
+                <div class="preview-header">
+                  <mat-icon class="preview-icon">preview</mat-icon>
+                  <span class="preview-title">Vista Previa del Pedido</span>
+                </div>
+                <div class="preview-content">
+                  <div class="preview-row">
+                    <span class="preview-label">Producto:</span>
+                    <span class="preview-value">{{ selectedProduct.name }}</span>
+                  </div>
+                  <div class="preview-row">
+                    <span class="preview-label">Código de Inventario:</span>
+                    <span class="preview-value">{{ selectedProduct.code }}</span>
+                  </div>
+                  <div class="preview-row">
+                    <span class="preview-label">Precio Unitario:</span>
+                    <span class="preview-value price">{{ selectedProduct.price | currency:'COP':'symbol':'1.0-0' }}</span>
+                  </div>
+                  <div class="preview-row">
+                    <span class="preview-label">Cantidad:</span>
+                    <span class="preview-value">{{ itemForm.get('quantity')?.value }}</span>
+                  </div>
+                  <div class="total-row">
+                    <span class="preview-label">Total:</span>
+                    <span class="preview-value total">{{ (selectedProduct.price * itemForm.get('quantity')?.value) | currency:'COP':'symbol':'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
               }
-            </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
+
+              <!-- Botón para recargar productos si hay error -->
+              @if (error) {
+              <div class="error-actions">
+                <button
+                  type="button"
+                  mat-raised-button
+                  color="warn"
+                  (click)="loadProducts()"
+                  [disabled]="!isFormEnabled()"
+                >
+                  <mat-icon>refresh</mat-icon>
+                  Reintentar cargar productos
+                </button>
+              </div>
+              }
+
+              <div class="form-actions-fullscreen">
+                <button type="button" class="btn-secondary" (click)="onClose()">
+                  <mat-icon>arrow_back</mat-icon>
+                  Volver
+                </button>
+                @if (isFormEnabled()) {
+                <button type="button" class="btn-neutral" (click)="resetForm()">
+                  <mat-icon>refresh</mat-icon>
+                  Limpiar
+                </button>
+                <button type="button" class="btn-debug" (click)="debugInventoryCodes()" *ngIf="products.length > 0">
+                  <mat-icon>bug_report</mat-icon>
+                  Debug Códigos
+                </button>
+                <button
+                  type="submit"
+                  class="btn-primary"
+                  [disabled]="itemForm.invalid || loading"
+                >
+                  <mat-icon>add_shopping_cart</mat-icon>
+                  Agregar Producto
+                </button>
+                }
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
   </div>
 </div>

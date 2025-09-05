@@ -10,15 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProductService } from '../../../core/services/productService/product-service';
-
-// Interfaz para Product
-interface Product {
-    id: number;
-    name: string;
-    price: number;
-    category: string;
-    available: boolean;
-}
+import { Product } from '../../products/models/Product';
 
 @Component({
     selector: 'app-order-item-form',
@@ -134,6 +126,9 @@ export class OrderItemForm implements OnInit {
                 console.log('📦 Productos extraídos:', productsData);
 
                 if (productsData.length > 0) {
+                    console.log('🔍 Analizando primer producto para ver estructura:', productsData[0]);
+                    console.log('🔍 Campos disponibles en productos:', Object.keys(productsData[0] || {}));
+                    
                     // Filtrar productos disponibles y mapear a la interfaz correcta
                     this.products = productsData
                         .filter(product => {
@@ -142,15 +137,48 @@ export class OrderItemForm implements OnInit {
                             console.log(`Producto ${product.name || product.id}: available = ${product.available}, isAvailable = ${isAvailable}`);
                             return isAvailable;
                         })
-                        .map(product => ({
-                            id: product.id,
-                            name: product.name || product.productName || 'Sin nombre',
-                            price: product.price || product.unitPrice || 0,
-                            category: product.category || 'Sin categoría',
-                            available: product.available !== false
-                        }));
+                        .map(product => {
+                            // Buscar el código de inventario en múltiples campos posibles
+                            let inventoryCode = null;
+                            
+                            // Lista de campos donde puede estar el código de inventario
+                            const possibleCodeFields = [
+                                'code', 'productCode', 'inventoryCode', 'sku', 
+                                'barcode', 'itemCode', 'productId', 'id'
+                            ];
+                            
+                            // Buscar código en los campos del producto
+                            for (const field of possibleCodeFields) {
+                                if (product[field] && typeof product[field] === 'string') {
+                                    // Verificar si el campo contiene un código con formato válido
+                                    const fieldValue = product[field].toString().trim();
+                                    if (fieldValue.length > 0) {
+                                        inventoryCode = fieldValue;
+                                        console.log(`📋 Código encontrado en campo '${field}': ${inventoryCode} para producto ${product.name}`);
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // Si no se encontró código, generar uno basado en el ID
+                            if (!inventoryCode) {
+                                inventoryCode = `PROD_${product.id}`;
+                                console.log(`📋 Código generado para producto ${product.name}: ${inventoryCode}`);
+                            }
+                            
+                            console.log(`📋 Código final de inventario para '${product.name}': ${inventoryCode}`);
+                            
+                            return {
+                                id: product.id,
+                                name: product.name || product.productName || 'Sin nombre',
+                                price: product.price || product.unitPrice || 0,
+                                category: product.category || 'Sin categoría',
+                                available: product.available !== false,
+                                code: inventoryCode
+                            };
+                        });
 
-                    console.log('✅ Productos procesados:', this.products);
+                    console.log('✅ Productos procesados con códigos:', this.products);
                 } else {
                     console.warn('⚠️ No se encontraron productos en la respuesta');
                     this.products = [];
@@ -182,30 +210,38 @@ export class OrderItemForm implements OnInit {
 
     onProductChange() {
         const productId = this.itemForm.get('productId')?.value;
+        console.log('🎯 onProductChange llamado');
         console.log('🎯 Producto seleccionado ID:', productId);
         console.log('🎯 Productos disponibles:', this.products);
         console.log('🎯 Tipo de productId:', typeof productId);
 
-        // Buscar el producto por ID
-        this.selectedProduct = this.products.find(p => {
-            console.log(`Comparando: p.id (${p.id}, tipo: ${typeof p.id}) con productId (${productId}, tipo: ${typeof productId})`);
-            return p.id === productId;
-        }) || null;
+        // Limpiar selección anterior
+        this.selectedProduct = null;
 
-        console.log('🎯 Producto encontrado:', this.selectedProduct);
+        if (productId && this.products.length > 0) {
+            // Buscar el producto por ID (asegurándose de comparar tipos correctamente)
+            this.selectedProduct = this.products.find(p => {
+                console.log(`🔍 Comparando: p.id (${p.id}, tipo: ${typeof p.id}) con productId (${productId}, tipo: ${typeof productId})`);
+                // Convertir ambos a string para comparar o convertir ambos a number
+                return p.id.toString() === productId.toString();
+            }) || null;
 
-        if (this.selectedProduct) {
-            console.log('✅ Producto cargado correctamente:', {
-                id: this.selectedProduct.id,
-                name: this.selectedProduct.name,
-                price: this.selectedProduct.price
-            });
+            if (this.selectedProduct) {
+                console.log('✅ Producto encontrado y seleccionado:', {
+                    id: this.selectedProduct.id,
+                    name: this.selectedProduct.name,
+                    price: this.selectedProduct.price,
+                    category: this.selectedProduct.category
+                });
+            } else {
+                console.warn('⚠️ No se encontró el producto con ID:', productId);
+                console.warn('⚠️ Productos disponibles IDs:', this.products.map(p => ({ id: p.id, name: p.name })));
+            }
         } else {
-            console.warn('⚠️ No se encontró el producto con ID:', productId);
-            console.warn('⚠️ Productos disponibles:', this.products.map(p => ({ id: p.id, name: p.name })));
+            console.log('ℹ️ ProductId vacío o no hay productos disponibles');
         }
 
-        // Trigger change detection
+        // Forzar detección de cambios
         setTimeout(() => {
             console.log('🔄 Estado después del timeout:', {
                 selectedProduct: this.selectedProduct,
@@ -225,8 +261,22 @@ export class OrderItemForm implements OnInit {
     }
 
     onSubmit() {
-        // Mensaje cuando la orden está en estado entragada
+        console.log('🚀 onSubmit iniciado');
+        console.log('🔍 Estado del formulario:', {
+            valid: this.itemForm.valid,
+            errors: this.itemForm.errors,
+            productIdValue: this.itemForm.get('productId')?.value,
+            quantityValue: this.itemForm.get('quantity')?.value,
+            productIdErrors: this.itemForm.get('productId')?.errors,
+            quantityErrors: this.itemForm.get('quantity')?.errors
+        });
+        console.log('🔍 Producto seleccionado:', this.selectedProduct);
+        console.log('🔍 ¿Orden entregada?:', this.isOrderDelivered());
+        console.log('🔍 ¿Formulario habilitado?:', this.isFormEnabled());
+
+        // Mensaje cuando la orden está en estado entregada
         if (this.isOrderDelivered()) {
+            console.log('⚠️ Orden entregada, no se puede agregar producto');
             this.snackBar.open('No se pueden modificar órdenes entregadas', 'Cerrar', { duration: 3000 });
             return;
         }
@@ -234,20 +284,40 @@ export class OrderItemForm implements OnInit {
         if (this.itemForm.valid && this.selectedProduct) {
             const formData = this.itemForm.value;
             const itemData = {
+                productId: this.selectedProduct.id,
                 productName: this.selectedProduct.name,
-                quantity: formData.quantity
+                productCode: this.selectedProduct.code || this.selectedProduct.name, // Usar el código del inventario
+                inventoryCode: this.selectedProduct.code || `PROD_${this.selectedProduct.id}`, // Código específico para inventario
+                quantity: formData.quantity,
+                unitPrice: this.selectedProduct.price,
+                totalPrice: this.selectedProduct.price * formData.quantity
             };
-            console.log('📤 Enviando item data:', itemData);
+            console.log('📤 Enviando item data completo:', itemData);
+            console.log('📊 Código de inventario que se usará:', itemData.inventoryCode);
             this.addItem.emit(itemData);
         } else {
-            console.warn('⚠️ Formulario inválido:', {
-                valid: this.itemForm.valid,
+            console.warn('⚠️ Formulario inválido o producto no seleccionado');
+            console.warn('⚠️ Detalles:', {
+                formValid: this.itemForm.valid,
                 selectedProduct: this.selectedProduct,
                 formErrors: this.itemForm.errors,
                 productIdErrors: this.itemForm.get('productId')?.errors,
-                quantityErrors: this.itemForm.get('quantity')?.errors
+                quantityErrors: this.itemForm.get('quantity')?.errors,
+                productIdValue: this.itemForm.get('productId')?.value,
+                quantityValue: this.itemForm.get('quantity')?.value
             });
-            this.snackBar.open('Por favor completa todos los campos requeridos', 'Cerrar', { duration: 3000 });
+            
+            let errorMessage = 'Por favor completa todos los campos requeridos';
+            
+            if (!this.selectedProduct) {
+                errorMessage = 'Por favor selecciona un producto';
+            } else if (!this.itemForm.get('quantity')?.value) {
+                errorMessage = 'Por favor ingresa la cantidad';
+            } else if (this.itemForm.get('quantity')?.value <= 0) {
+                errorMessage = 'La cantidad debe ser mayor a 0';
+            }
+            
+            this.snackBar.open(errorMessage, 'Cerrar', { duration: 3000 });
         }
     }
 
@@ -258,5 +328,50 @@ export class OrderItemForm implements OnInit {
     resetForm() {
         this.itemForm.reset();
         this.selectedProduct = null;
+    }
+
+    debugInventoryCodes() {
+        console.log('🐛 =======  DEBUG CÓDIGOS DE INVENTARIO  =======');
+        console.log('🐛 Total de productos:', this.products.length);
+        
+        this.products.forEach((product, index) => {
+            console.log(`🐛 Producto ${index + 1}:`, {
+                id: product.id,
+                name: product.name,
+                code: product.code,
+                price: product.price,
+                available: product.available
+            });
+        });
+
+        console.log('🐛 Producto seleccionado actualmente:', this.selectedProduct);
+        
+        if (this.selectedProduct) {
+            console.log('🐛 Código que se enviará al inventario:', this.selectedProduct.code);
+        }
+        
+        // Buscar específicamente el producto "B01-UN-0002P"
+        const targetProduct = this.products.find(p => 
+            p.code === 'B01-UN-0002P' || 
+            p.name.includes('B01-UN-0002P') ||
+            p.id.toString() === 'B01-UN-0002P'
+        );
+        
+        if (targetProduct) {
+            console.log('🎯 PRODUCTO B01-UN-0002P ENCONTRADO:', targetProduct);
+        } else {
+            console.log('❌ PRODUCTO B01-UN-0002P NO ENCONTRADO');
+            console.log('🔍 Códigos disponibles:', this.products.map(p => p.code));
+        }
+        
+        console.log('🐛 =======================================');
+        
+        // Mostrar un snackbar con resumen detallado
+        const debugInfo = `Debug: ${this.products.length} productos cargados. ` + 
+                         `Producto seleccionado: ${this.selectedProduct?.name || 'Ninguno'}. ` +
+                         `Código: ${this.selectedProduct?.code || 'N/A'}. ` +
+                         `B01-UN-0002P encontrado: ${targetProduct ? 'SÍ' : 'NO'}`;
+        
+        this.snackBar.open(debugInfo, 'Cerrar', { duration: 15000 });
     }
 }

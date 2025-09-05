@@ -1,201 +1,550 @@
-<!-- Componente de lista de órdenes -->
-<div class="mb-4 flex justify-end">
-  <button
-    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-all duration-200"
-    (click)="onOpenNewOrderModal()">
-    Nueva Orden
-  </button>
-</div>
-
-@if (showNewOrderModal) {
-<div style="background: #fff; border: 2px solid red; padding: 2rem; z-index: 9999;">
-  MODAL ABIERTO
-</div>
-<app-order-form (createOrder)="onCreateOrder($event)" (close)="onCloseNewOrderModal()"></app-order-form>
-}
-
-@if (showOrderDetails && selectedOrder) {
-<app-order-detail [order]="selectedOrder" [visible]="showOrderDetails" (close)="onCloseOrderDetails()"
-  (refreshOrder)="onRefreshSelectedOrder($event)" (addItem)="onAddItemToOrder($event)"
-  (removeItem)="onRemoveItemFromOrder($event)"></app-order-detail>
-}
-
-<!-- Cuando no hay mesa seleccionada, se muestran todas las mesas disponibles -->
-@if (!mesaSeleccionada) {
-<div class="max-w-7xl mx-auto mt-8 grid" style="grid-template-columns: repeat(4, 1fr); gap: 16px;">
-  @for (mesa of mesas; track mesa) {
-  <div style="width: 100%; max-width: 100%; margin: 0 auto;"
-    class="bg-white shadow rounded-xl text-gray-900 flex flex-col items-center overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border p-2 text-xs"
-    [ngClass]="getMesaEstado(mesa) === 'Ocupada' ? 'border-green-500 bg-green-50 hover:bg-green-100' : 'border-gray-200 bg-white hover:bg-blue-50'"
-    (click)="getMesaEstado(mesa) === 'Ocupada' ? seleccionarMesa(mesa) : null">
-    <div class="text-center mt-1">
-      <h2 class="font-semibold text-sm text-blue-700">Mesa {{ mesa }}</h2>
-      <p class="text-[11px] text-gray-500 font-medium">
-        <span [ngClass]="getMesaEstado(mesa) === 'Ocupada' ? 'text-green-700' : 'text-gray-500'">
-          {{ getMesaEstado(mesa) }}
-        </span>
-      </p>
-    </div>
-    <ul class="py-1 mt-1 text-gray-700 flex items-center justify-around w-full text-[11px]">
-      <li class="flex flex-col items-center">
-        <span class="text-[10px] text-gray-500">Órdenes</span>
-        <span class="font-bold text-blue-900">{{ getMesaOrders(mesa).length }}</span>
-      </li>
-      <li class="flex flex-col items-center">
-        <span class="text-[10px] text-gray-500">Estado</span>
-        <span class="font-bold text-blue-900">{{ getMesaEstado(mesa) }}</span>
-      </li>
-    </ul>
-    <div class="p-1 border-t w-full mt-1">
-      <button
-        class="w-full rounded-full bg-blue-600 hover:bg-blue-700 font-semibold text-white px-2 py-1 text-[11px] transition-all duration-200"
-        [disabled]="getMesaEstado(mesa) !== 'Ocupada'">
-        Ver órdenes
-      </button>
-      @if(getMesaEstado(mesa) === 'Disponible'){
-      <div class="text-[10px] text-gray-400 italic mt-1">Sin órdenes hoy</div>
-      }
-    </div>
-  </div>
-  }
-</div>
-}
-
-<!-- Cuando hay una mesa seleccionada, se muestran sus órdenes -->
-@if (mesaSeleccionada) {
-<div class="max-w-7xl mx-auto mt-4">
-  <!-- Encabezado con información de la mesa y botón para volver -->
-  <div class="flex justify-between items-center mb-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
-    <div>
-      <h2 class="text-xl font-bold text-blue-800">Mesa {{ mesaSeleccionada }}</h2>
-      <p class="text-sm text-blue-600">{{ tableOrders.length }} órdenes encontradas</p>
-    </div>
-    <button class="btn-secondary flex items-center" (click)="deseleccionarMesa()">
-      <mat-icon class="mr-1">arrow_back</mat-icon> Volver
-    </button>
-  </div>
-
-  <!-- Estado de carga -->
-  @if (loadingTableOrders) {
-  <div class="flex justify-center items-center p-10">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    <p class="ml-3 text-blue-500">Cargando órdenes de la mesa...</p>
-  </div>
-  }
-
-  <!-- Lista de órdenes de la mesa -->
-  @if (!loadingTableOrders && tableOrders.length > 0) {
-  <div class="grid" style="grid-template-columns: repeat(1, 1fr); gap: 16px;">
-    @for (order of tableOrders; track order.id) {
-    <div class="order-card">
-      <div class="order-header">
-        <div>
-          <h3 class="order-title">Orden #{{ order.id }}</h3>
-          <p class="text-sm text-gray-600">{{ order.date | date:'medium' }}</p>
+<!-- Módulo de Gestión de Órdenes -->
+<div class="orders-container min-h-screen bg-gradient-to-br from-b-500 to-b-100">
+  
+  <!-- Header Principal con Herramientas -->
+  <div class="header-section">
+    <div class="header-card">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="main-title">
+            <mat-icon class="title-icon">restaurant_menu</mat-icon>
+            Gestión de Órdenes
+          </h1>
+          <p class="subtitle">Sistema completo de administración de órdenes y mesas del restaurante</p>
+          <div class="header-stats">
+            <div class="mini-stat">
+              <mat-icon>today</mat-icon>
+              <span>{{ todayOrders.length }} órdenes hoy</span>
+            </div>
+            <div class="mini-stat">
+              <mat-icon>table_restaurant</mat-icon>
+              <span>{{ getMesasOcupadas() }}/{{ mesas.length }} mesas ocupadas</span>
+            </div>
+            <div class="mini-stat">
+              <mat-icon>attach_money</mat-icon>
+              <span>{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }} en ventas</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <span class="order-status" [ngClass]="{
-                        'bg-yellow-100 text-yellow-800': order.status === OrderStatus.PENDING,
-                        'bg-blue-100 text-blue-800': order.status === OrderStatus.IN_PROGRESS,
-                        'bg-green-100 text-green-800': order.status === OrderStatus.READY,
-                        'bg-purple-100 text-purple-800': order.status === OrderStatus.DELIVERED,
-                        'bg-red-100 text-red-800': order.status === OrderStatus.CANCELLED
-                      }">
-            {{ order.status }}
-          </span>
+        
+        <div class="header-actions">
+          <button class="modern-action-btn refresh-btn" (click)="loadOrders()">
+            <mat-icon>refresh</mat-icon>
+            <span>Actualizar Todo</span>
+          </button>
+          <button class="new-order-btn" (click)="onOpenNewOrderModal()">
+            <mat-icon>add_circle</mat-icon>
+            <span>Nueva Orden</span>
+          </button>
         </div>
       </div>
-      <div>
-        <div class="mb-3">
-          <p class="text-sm font-medium text-gray-600">Cliente: <span class="text-gray-800">{{ order.clientName || 'No
-              especificado' }}</span></p>
-          <p class="text-sm font-medium text-gray-600">Valor a pagar: <span class="text-gray-800 font-bold">{{
-              order.valueToPay | currency:'COP':'symbol':'1.0-0' }}</span></p>
+    </div>
+  </div>
+
+  <!-- Modales -->
+  @if (showNewOrderModal) {
+    <app-order-form 
+      [tableNumber]="mesaSeleccionada || undefined" 
+      (createOrder)="onCreateOrder($event)" 
+      (close)="onCloseNewOrderModal()">
+    </app-order-form>
+  }
+
+  @if (showOrderDetails && selectedOrder) {
+  <app-order-detail [order]="selectedOrder" [visible]="showOrderDetails" (close)="onCloseOrderDetails()"
+    (refreshOrder)="onRefreshSelectedOrder($event)" (addItem)="onAddItemToOrder($event)"
+    (removeItem)="onRemoveItemFromOrder($event)"></app-order-detail>
+  }
+
+  @if (showAddItemModal && selectedOrder) {
+  <app-order-item-form 
+    [orderId]="selectedOrder.id" 
+    [orderStatus]="selectedOrder.status"
+    (addItem)="onAddItemToSelectedOrder($event)"
+    (close)="onCloseAddItemModal()">
+  </app-order-item-form>
+  }
+
+  <!-- Vista de Mesas (cuando no hay mesa seleccionada) -->
+  @if (!mesaSeleccionada) {
+    <div class="content-container">
+      <!-- Estadísticas Avanzadas del Día -->
+      <div class="stats-section">
+        <div class="section-header-enhanced">
+          <h2 class="section-title">Dashboard del Día</h2>
+          <p class="section-subtitle">Resumen completo de la operación del restaurante</p>
         </div>
-
-        <div class="products-section">
-          <h4 class="products-title">Productos:</h4>
-          <ul class="products-list">
-            @for (item of order.orderItemList || []; track item.id) {
-            <li>
-              {{ item.quantity }}x {{ item.productName }} - {{ item.unitPrice * item.quantity |
-              currency:'COP':'symbol':'1.0-0' }}
-            </li>
-            }
-            @if (!order.orderItemList || order.orderItemList.length === 0) {
-            <li class="text-xs text-gray-500 italic">No hay productos en esta orden</li>
-            }
-          </ul>
-        </div>
-
-        <div class="mt-4 flex space-x-2 justify-end">
-          <!-- Botón para ver detalles -->
-          <button class="btn-main flex items-center" (click)="onViewOrderDetails(order)">
-            <mat-icon class="text-sm mr-1">visibility</mat-icon>
-            Detalles
-          </button>
-
-          <!-- Menú desplegable para cambiar estado -->
-          <div class="relative inline-block">
-            <button
-              class="bg-purple-600 hover:bg-purple-700 text-white text-xs py-1 px-3 rounded transition-colors duration-200 flex items-center"
-              [matMenuTriggerFor]="statusMenu">
-              <mat-icon class="text-sm mr-1">swap_horiz</mat-icon>
-              Cambiar estado
-            </button>
-            <mat-menu #statusMenu="matMenu">
-              <button mat-menu-item
-                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.PENDING})"
-                [disabled]="order.status === OrderStatus.PENDING">
-                <span>Pendiente</span>
-              </button>
-              <button mat-menu-item
-                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.IN_PROGRESS})"
-                [disabled]="order.status === OrderStatus.IN_PROGRESS">
-                <span>En Progreso</span>
-              </button>
-              <button mat-menu-item (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.READY})"
-                [disabled]="order.status === OrderStatus.READY">
-                <span>Lista</span>
-              </button>
-              <button mat-menu-item
-                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.DELIVERED})"
-                [disabled]="order.status === OrderStatus.DELIVERED">
-                <span>Entregada</span>
-              </button>
-              <button mat-menu-item
-                (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.CANCELLED})"
-                [disabled]="order.status === OrderStatus.CANCELLED">
-                <span>Cancelada</span>
-              </button>
-            </mat-menu>
+        
+        <!-- Estadísticas Principales -->
+        <div class="stats-grid-enhanced">
+          <!-- Órdenes Totales -->
+          <div class="stats-card main-stat">
+            <div class="stats-content">
+              <div class="stats-icon-wrapper bg-blue-100">
+                <mat-icon class="text-blue-600">receipt_long</mat-icon>
+              </div>
+              <div class="stats-info">
+                <div class="stats-number">{{ todayOrders.length }}</div>
+                <div class="stats-label">Órdenes de Hoy</div>
+                <div class="stats-trend">
+                  <mat-icon class="trend-icon positive">trending_up</mat-icon>
+                  <span class="trend-text">+12% vs ayer</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Botón para eliminar orden -->
-          <button
-            class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-3 rounded transition-colors duration-200 flex items-center"
+          <!-- Mesas Ocupadas -->
+          <div class="stats-card main-stat">
+            <div class="stats-content">
+              <div class="stats-icon-wrapper bg-orange-100">
+                <mat-icon class="text-orange-600">table_restaurant</mat-icon>
+              </div>
+              <div class="stats-info">
+                <div class="stats-number">{{ getMesasOcupadas() }}/{{ mesas.length }}</div>
+                <div class="stats-label">Mesas Ocupadas</div>
+                <div class="stats-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="(getMesasOcupadas() / mesas.length) * 100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ventas del Día -->
+          <div class="stats-card main-stat">
+            <div class="stats-content">
+              <div class="stats-icon-wrapper bg-green-100">
+                <mat-icon class="text-green-600">attach_money</mat-icon>
+              </div>
+              <div class="stats-info">
+                <div class="stats-number">{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }}</div>
+                <div class="stats-label">Ventas del Día</div>
+                <div class="stats-trend">
+                  <mat-icon class="trend-icon positive">trending_up</mat-icon>
+                  <span class="trend-text">+8% vs ayer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Promedio por Mesa -->
+          <div class="stats-card main-stat">
+            <div class="stats-content">
+              <div class="stats-icon-wrapper bg-purple-100">
+                <mat-icon class="text-purple-600">calculate</mat-icon>
+              </div>
+              <div class="stats-info">
+                <div class="stats-number">{{ getMesasOcupadas() > 0 ? (getTotalVentasHoy() / getMesasOcupadas() | currency:'COP':'symbol':'1.0-0') : '$0' }}</div>
+                <div class="stats-label">Promedio por Mesa</div>
+                <div class="stats-detail">
+                  <span class="detail-text">{{ getMesasOcupadas() }} mesas activas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas por Estado -->
+        <div class="status-overview">
+          <h3 class="overview-title">Estados de Órdenes</h3>
+          <div class="status-cards">
+            <div class="status-card pending">
+              <div class="status-icon">
+                <mat-icon>schedule</mat-icon>
+              </div>
+              <div class="status-info">
+                <div class="status-count">{{ getOrdersByStatus('PENDING').length }}</div>
+                <div class="status-label">Pendientes</div>
+              </div>
+            </div>
+
+            <div class="status-card progress">
+              <div class="status-icon">
+                <mat-icon>hourglass_empty</mat-icon>
+              </div>
+              <div class="status-info">
+                <div class="status-count">{{ getOrdersByStatus('IN_PROGRESS').length }}</div>
+                <div class="status-label">En Cocina</div>
+              </div>
+            </div>
+
+            <div class="status-card ready">
+              <div class="status-icon">
+                <mat-icon>check_circle</mat-icon>
+              </div>
+              <div class="status-info">
+                <div class="status-count">{{ getOrdersByStatus('READY').length }}</div>
+                <div class="status-label">Listas</div>
+              </div>
+            </div>
+
+            <div class="status-card delivered">
+              <div class="status-icon">
+                <mat-icon>local_shipping</mat-icon>
+              </div>
+              <div class="status-info">
+                <div class="status-count">{{ getOrdersByStatus('DELIVERED').length }}</div>
+                <div class="status-label">Entregadas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Mesas Mejorada -->
+      <div class="mesas-section">
+        <div class="section-header-enhanced">
+          <div class="header-content">
+            <h2 class="section-title">Administración de Mesas</h2>
+            <p class="section-subtitle">Selecciona una mesa para ver y gestionar sus órdenes activas</p>
+          </div>
+          <div class="section-controls">
+            <div class="view-toggle">
+              <button class="toggle-btn active">
+                <mat-icon>grid_view</mat-icon>
+                Vista Cuadrícula
+              </button>
+              <button class="toggle-btn">
+                <mat-icon>view_list</mat-icon>
+                Vista Lista
+              </button>
+            </div>
+            <div class="filter-chips">
+              <div class="filter-chip all active">
+                <span>Todas ({{ mesas.length }})</span>
+              </div>
+              <div class="filter-chip occupied">
+                <mat-icon>people</mat-icon>
+                <span>Ocupadas ({{ getMesasOcupadas() }})</span>
+              </div>
+              <div class="filter-chip available">
+                <mat-icon>event_available</mat-icon>
+                <span>Disponibles ({{ getMesasDisponibles() }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mesas-grid-enhanced">
+          @for (mesa of mesas; track mesa) {
+            <div class="mesa-card-enhanced group cursor-pointer transform transition-all duration-300 hover:scale-105"
+              [ngClass]="{
+                'mesa-ocupada': getMesaEstado(mesa) === 'Ocupada',
+                'mesa-disponible': getMesaEstado(mesa) === 'Disponible'
+              }"
+              (click)="getMesaEstado(mesa) === 'Ocupada' ? seleccionarMesa(mesa) : null">
+              
+              <!-- Header de la Mesa -->
+              <div class="mesa-header-card">
+                <div class="mesa-title">
+                  <mat-icon class="mesa-icon-title">
+                    {{ getMesaEstado(mesa) === 'Ocupada' ? 'table_restaurant' : 'table_bar' }}
+                  </mat-icon>
+                  <span class="mesa-number-title">Mesa {{ mesa }}</span>
+                </div>
+                <div class="mesa-status-badge" [ngClass]="{
+                  'status-occupied': getMesaEstado(mesa) === 'Ocupada',
+                  'status-available': getMesaEstado(mesa) === 'Disponible'
+                }">
+                  <mat-icon class="status-icon-small">
+                    {{ getMesaEstado(mesa) === 'Ocupada' ? 'people' : 'event_available' }}
+                  </mat-icon>
+                  {{ getMesaEstado(mesa) }}
+                </div>
+              </div>
+              
+              <!-- Contenido de la Mesa -->
+              <div class="mesa-content">
+                @if (getMesaEstado(mesa) === 'Ocupada') {
+                  <!-- Información Detallada -->
+                  <div class="mesa-info-detailed">
+                    <div class="info-row">
+                      <span class="info-label">Órdenes Activas:</span>
+                      <span class="info-value highlight">{{ getMesaOrders(mesa).length }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Total Acumulado:</span>
+                      <span class="info-value money">{{ getMesaTotal(mesa) | currency:'COP':'symbol':'1.0-0' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Estados Detallados -->
+                  <div class="mesa-estados-detailed" *ngIf="getMesaOrders(mesa).length > 0">
+                    <div class="estados-title">Estados de Órdenes:</div>
+                    <div class="estados-grid">
+                      <div class="estado-item pending" *ngIf="getMesaOrdersByStatus(mesa, 'PENDING').length > 0">
+                        <mat-icon>schedule</mat-icon>
+                        <span>{{ getMesaOrdersByStatus(mesa, 'PENDING').length }} Pendiente(s)</span>
+                      </div>
+                      <div class="estado-item progress" *ngIf="getMesaOrdersByStatus(mesa, 'IN_PROGRESS').length > 0">
+                        <mat-icon>hourglass_empty</mat-icon>
+                        <span>{{ getMesaOrdersByStatus(mesa, 'IN_PROGRESS').length }} En Cocina</span>
+                      </div>
+                      <div class="estado-item ready" *ngIf="getMesaOrdersByStatus(mesa, 'READY').length > 0">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>{{ getMesaOrdersByStatus(mesa, 'READY').length }} Lista(s)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Timeline de Actividad -->
+                  <div class="mesa-timeline">
+                    <div class="timeline-title">Actividad Reciente:</div>
+                    <div class="timeline-items">
+                      @for (order of getMesaOrders(mesa).slice(0, 2); track order.id) {
+                        <div class="timeline-item">
+                          <div class="timeline-dot" [ngClass]="'status-' + order.status.toLowerCase()"></div>
+                          <div class="timeline-content">
+                            <span class="timeline-text">Orden #{{ order.id }}</span>
+                            <span class="timeline-time">{{ order.date | date:'HH:mm' }}</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <!-- Mesa Disponible -->
+                  <div class="mesa-available">
+                    <div class="available-icon-large">
+                      <mat-icon>event_available</mat-icon>
+                    </div>
+                    <div class="available-message">
+                      <h4>Mesa Disponible</h4>
+                      <p>Lista para recibir nuevos clientes</p>
+                    </div>
+                    <div class="available-actions">
+                      <button 
+                        class="quick-order-btn" 
+                        (click)="onOpenNewOrderModalForTable(mesa); $event.stopPropagation()"
+                        [attr.aria-label]="'Crear nueva orden para mesa ' + mesa"
+                        matRipple
+                      >
+                        <mat-icon>restaurant_menu</mat-icon>
+                        Crear Orden
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+              
+              <!-- Footer con Acciones -->
+              <div class="mesa-footer">
+                @if (getMesaEstado(mesa) === 'Ocupada') {
+                  <button class="mesa-action-btn primary">
+                    <mat-icon>visibility</mat-icon>
+                    <span>Ver Órdenes ({{ getMesaOrders(mesa).length }})</span>
+                  </button>
+                } @else {
+                  <div class="mesa-capacity">
+                    <mat-icon>people</mat-icon>
+                    <span>Capacidad: 4 personas</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+  <!-- Vista de Órdenes de Mesa Seleccionada -->
+  @if (mesaSeleccionada) {
+  <div class="max-w-7xl mx-auto">
+    <!-- Header de Mesa Seleccionada -->
+    <div class="mesa-header bg-white rounded-2xl shadow-lg p-6 mb-6">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="mesa-icon-large">
+            <mat-icon class="text-4xl text-blue-600">table_restaurant</mat-icon>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-800">Mesa {{ mesaSeleccionada }}</h2>
+            <div class="flex items-center gap-4 mt-1">
+              <span class="text-gray-600">{{ tableOrders.length }} órdenes activas</span>
+              <button 
+                class="modern-action-btn refresh-btn"
+                (click)="refreshTableOrders()">
+                <mat-icon>refresh</mat-icon>
+                <span>Actualizar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button 
+          class="modern-action-btn back-btn"
+          (click)="deseleccionarMesa()">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Volver a Mesas</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loadingTableOrders) {
+    <div class="loading-container">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Cargando órdenes de la mesa...</p>
+      </div>
+    </div>
+    }
+
+    <!-- Lista de Órdenes -->
+    @if (!loadingTableOrders && tableOrders.length > 0) {
+    <div class="orders-grid">
+      @for (order of tableOrders; track order.id) {
+      <div class="order-card modern-card">
+        <!-- Header de la Orden -->
+        <div class="order-card-header">
+          <div class="order-info">
+            <h3 class="order-title">
+              <mat-icon class="order-icon">receipt</mat-icon>
+              Orden #{{ order.id }}
+            </h3>
+            <p class="order-date">{{ order.date | date:'medium' }}</p>
+          </div>
+          <div class="order-status-container">
+            <span class="order-status-badge" [ngClass]="{
+              'status-pending': order.status === OrderStatus.PENDING,
+              'status-progress': order.status === OrderStatus.IN_PROGRESS,
+              'status-ready': order.status === OrderStatus.READY,
+              'status-delivered': order.status === OrderStatus.DELIVERED,
+              'status-cancelled': order.status === OrderStatus.CANCELLED
+            }">
+              <mat-icon class="status-icon">
+                {{ getStatusIcon(order.status) }}
+              </mat-icon>
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Contenido de la Orden -->
+        <div class="order-card-content">
+          <!-- Información del Cliente -->
+          <div class="client-info">
+            <div class="info-row">
+              <mat-icon class="info-icon">person</mat-icon>
+              <span class="info-label">Cliente:</span>
+              <span class="info-value">{{ order.clientName || 'No especificado' }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">attach_money</mat-icon>
+              <span class="info-label">Total:</span>
+              <span class="info-value total-amount">{{ order.valueToPay | currency:'COP':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+
+          <!-- Lista de Productos -->
+          <div class="products-container">
+            <h4 class="products-header">
+              <mat-icon class="products-icon">restaurant_menu</mat-icon>
+              Productos ({{ (order.orderItemList || []).length }})
+            </h4>
+            @if (order.orderItemList && order.orderItemList.length > 0) {
+              <ul class="products-list modern-list">
+                @for (item of order.orderItemList; track item.id) {
+                  <li class="product-item">
+                    <div class="product-info">
+                      <span class="product-quantity">{{ item.quantity }}x</span>
+                      <span class="product-name">{{ item.productName }}</span>
+                    </div>
+                    <span class="product-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol':'1.0-0' }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <div class="empty-products">
+                <mat-icon>restaurant</mat-icon>
+                <span>No hay productos en esta orden</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Acciones de la Orden -->
+        <div class="order-card-actions">
+          <button 
+            class="action-btn primary-btn" 
+            (click)="onViewOrderDetails(order)">
+            <mat-icon>visibility</mat-icon>
+            Ver Detalles
+          </button>
+
+          <button 
+            class="action-btn secondary-btn" 
+            [matMenuTriggerFor]="statusMenu">
+            <mat-icon>swap_horiz</mat-icon>
+            Cambiar Estado
+          </button>
+          <mat-menu #statusMenu="matMenu" class="status-menu">
+            <button mat-menu-item
+              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.PENDING})"
+              [disabled]="order.status === OrderStatus.PENDING"
+              class="status-menu-item pending">
+              <mat-icon>schedule</mat-icon>
+              <span>Pendiente</span>
+            </button>
+            <button mat-menu-item
+              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.IN_PROGRESS})"
+              [disabled]="order.status === OrderStatus.IN_PROGRESS"
+              class="status-menu-item progress">
+              <mat-icon>hourglass_empty</mat-icon>
+              <span>En Progreso</span>
+            </button>
+            <button mat-menu-item 
+              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.READY})"
+              [disabled]="order.status === OrderStatus.READY"
+              class="status-menu-item ready">
+              <mat-icon>check_circle</mat-icon>
+              <span>Lista</span>
+            </button>
+            <button mat-menu-item
+              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.DELIVERED})"
+              [disabled]="order.status === OrderStatus.DELIVERED"
+              class="status-menu-item delivered">
+              <mat-icon>local_shipping</mat-icon>
+              <span>Entregada</span>
+            </button>
+            <button mat-menu-item
+              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.CANCELLED})"
+              [disabled]="order.status === OrderStatus.CANCELLED"
+              class="status-menu-item cancelled">
+              <mat-icon>cancel</mat-icon>
+              <span>Cancelada</span>
+            </button>
+          </mat-menu>
+
+          <button 
+            class="action-btn danger-btn" 
             (click)="handleDeleteOrder(order.id)">
-            <mat-icon class="text-sm mr-1">delete</mat-icon>
+            <mat-icon>delete</mat-icon>
             Eliminar
           </button>
         </div>
       </div>
+      }
     </div>
+    }
+
+    <!-- Estado Vacío -->
+    @if (!loadingTableOrders && tableOrders.length === 0) {
+      <div class="empty-state-container">
+        <div class="empty-state-content">
+          <mat-icon class="empty-icon">info</mat-icon>
+          <h3 class="empty-title">No hay órdenes en la Mesa {{ mesaSeleccionada }}</h3>
+          <p class="empty-description">Esta mesa no tiene órdenes activas en este momento</p>
+          <button
+            class="modern-action-btn add-item-btn"
+            (click)="deseleccionarMesa()">
+            <mat-icon>arrow_back</mat-icon>
+            <span>Volver a las Mesas</span>
+          </button>
+        </div>
+      </div>
     }
   </div>
   }
-
-  <!-- Mensaje si no hay órdenes -->
-  @if (!loadingTableOrders && tableOrders.length === 0) {
-  <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-6 rounded-lg text-center">
-    <mat-icon class="text-3xl mb-2">info</mat-icon>
-    <p class="font-medium">No se encontraron órdenes para la Mesa {{ mesaSeleccionada }}</p>
-    <button
-      class="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all duration-200"
-      (click)="deseleccionarMesa()">
-      Volver a las mesas
-    </button>
-  </div>
-  }
 </div>
-}

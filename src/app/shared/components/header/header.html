@@ -1,4 +1,4 @@
-<mat-toolbar class="navbar modern-navbar">
+  <mat-toolbar class="navbar modern-navbar">
     <div class="header-left">
       <div class="logo-glass">
         <span class="footer-icon">🍺</span>
@@ -6,37 +6,48 @@
       <span class="brand-modern">Project Bar</span>
     </div>
     <div class="header-center">
-      <button mat-button class="glass-btn" [routerLink]="['/orders']">
-        Órdenes
+      <button mat-button class="glass-btn" [routerLink]="['/orders']" routerLinkActive="active-btn">
+        <mat-icon>restaurant</mat-icon>
+        <span>Órdenes</span>
       </button>
 
-      <button mat-button class="glass-btn" [routerLink]="['/products']">
-        Productos
+      <button mat-button class="glass-btn" [routerLink]="['/products']" routerLinkActive="active-btn">
+        <mat-icon>inventory_2</mat-icon>
+        <span>Productos</span>
       </button>
-      <button mat-button class="glass-btn" [routerLink]="['/ingredients']">
-        Ingredientes
+      
+      <button mat-button class="glass-btn" [routerLink]="['/ingredients']" routerLinkActive="active-btn">
+        <mat-icon>science</mat-icon>
+        <span>Ingredientes</span>
       </button>
-      <button mat-button class="glass-btn" [routerLink]="['/inventory']">
-        Inventario
+      
+      <button mat-button class="glass-btn" [routerLink]="['/inventory']" routerLinkActive="active-btn">
+        <mat-icon>warehouse</mat-icon>
+        <span>Inventario</span>
       </button>
-      <button mat-button class="glass-btn" [routerLink]="['/bills']">
-        Facturación
+      
+      <button mat-button class="glass-btn" [routerLink]="['/bills']" routerLinkActive="active-btn">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Facturación</span>
       </button>
     </div>
     <div class="header-right">
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <button mat-icon-button class="avatar-btn" [matMenuTriggerFor]="userMenu">
         <img
           src="https://i.pravatar.cc/40?img=3"
           alt="Usuario"
-          width="40"
-          height="40"
-          style="border-radius: 50%; object-fit: cover"
+          class="avatar-modern"
         />
       </button>
       <mat-menu #userMenu="matMenu" class="user-menu-modern">
-        <button mat-menu-item>Perfil</button>
-        <button mat-menu-item>Cerrar sesión</button>
+        <button mat-menu-item>
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar sesión</span>
+        </button>
       </mat-menu>
     </div>
-  </mat-toolbar>
-  
+  </mat-toolbar>  

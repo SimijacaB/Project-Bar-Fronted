@@ -6,10 +6,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Order } from './models';
 import { OrderService } from '../../core/services/orderService/order-service';
 import { ProductService } from '../../core/services/productService/product-service';
+import { InventoryService } from '../../core/services/inventoryService/inventory-service';
 import { OrderForm } from './order-form/order-form';
 import { OrderStatus } from '../../shared/enums/order-status';
 import { MatMenuModule } from '@angular/material/menu';
 import { OrderDetail } from './order-detail/order-detail';
+import { OrderItemForm } from './order-item-form/order-item-form';
 
 
 @Component({
@@ -21,6 +23,7 @@ import { OrderDetail } from './order-detail/order-detail';
     OrderForm,
     MatMenuModule,
     OrderDetail,
+    OrderItemForm,
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css'
@@ -111,6 +114,7 @@ export class Orders implements OnInit {
   constructor(
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
+    private readonly inventoryService: InventoryService,
     private readonly snackBar: MatSnackBar
   ) { }
 
@@ -200,6 +204,98 @@ export class Orders implements OnInit {
 
   onAddItemToOrder(orderId: number) {
     this.showAddItemModal = true;
+  }
+
+  onCloseAddItemModal() {
+    this.showAddItemModal = false;
+  }
+
+  onAddItemToSelectedOrder(itemData: any) {
+    if (this.selectedOrder) {
+      console.log('📦 Agregando item a la orden:', itemData);
+      console.log('📦 Datos completos del item:', JSON.stringify(itemData, null, 2));
+      
+      // Primero agregamos el item a la orden
+      this.orderService.addOrderItemToOrder(this.selectedOrder.id, itemData).subscribe({
+        next: () => {
+          console.log('✅ Item agregado a la orden exitosamente');
+          
+          // Si se agrega exitosamente, descontamos del inventario
+          // Usamos el código específico del inventario
+          const inventoryCode = itemData.inventoryCode || itemData.productCode || itemData.productName;
+          
+          console.log('📊 Intentando descontar del inventario:', {
+            cantidad: itemData.quantity,
+            codigo: inventoryCode,
+            itemCompleto: itemData
+          });
+          
+          // Verificar si tenemos un backend correcto
+          console.log('🔗 URL del API de inventario:', `${this.inventoryService['apiUrl']}/deduct-stock`);
+          
+          this.inventoryService.deductStock(itemData.quantity, inventoryCode).subscribe({
+            next: (inventoryResponse) => {
+              console.log('✅ Inventario actualizado exitosamente:', inventoryResponse);
+              this.snackBar.open(
+                `✅ Producto agregado a la orden e inventario actualizado (${itemData.quantity} unidades de "${inventoryCode}" descontadas)`, 
+                'Cerrar', 
+                { duration: 5000 }
+              );
+              this.onRefreshSelectedOrder(this.selectedOrder!.id);
+              this.onCloseAddItemModal();
+            },
+            error: (inventoryError) => {
+              console.warn('⚠️ Producto agregado pero error al actualizar inventario:', inventoryError);
+              console.warn('⚠️ Detalles del error de inventario:', {
+                status: inventoryError.status,
+                statusText: inventoryError.statusText,
+                message: inventoryError.message,
+                error: inventoryError.error,
+                url: inventoryError.url
+              });
+              
+              let errorMessage = '⚠️ Producto agregado a la orden. ';
+              
+              if (inventoryError.status === 404) {
+                errorMessage += `Advertencia: Producto "${inventoryCode}" no encontrado en inventario`;
+              } else if (inventoryError.status === 400) {
+                errorMessage += `Advertencia: Stock insuficiente para "${inventoryCode}"`;
+              } else if (inventoryError.status === 0) {
+                errorMessage += 'Advertencia: No se pudo conectar con el servidor de inventario';
+              } else {
+                errorMessage += `Advertencia: Error ${inventoryError.status} al actualizar inventario`;
+              }
+              
+              console.log('📝 Mensaje de error que se mostrará:', errorMessage);
+              this.snackBar.open(errorMessage, 'Cerrar', { duration: 7000 });
+              this.onRefreshSelectedOrder(this.selectedOrder!.id);
+              this.onCloseAddItemModal();
+            }
+          });
+        },
+        error: (error) => {
+          console.error('❌ Error adding item to order:', error);
+          console.error('❌ Detalles del error:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            error: error.error,
+            url: error.url
+          });
+          
+          let errorMessage = 'Error al agregar el producto a la orden';
+          if (error.status === 404) {
+            errorMessage = 'Error: Orden no encontrada';
+          } else if (error.status === 400) {
+            errorMessage = 'Error: Datos del producto inválidos';
+          } else if (error.status === 0) {
+            errorMessage = 'Error: No se pudo conectar con el servidor';
+          }
+          
+          this.snackBar.open(errorMessage, 'Cerrar', { duration: 4000 });
+        }
+      });
+    }
   }
 
   onRemoveItemFromOrder(event: { orderId: number, itemId: number, quantity: number }) {
@@ -302,5 +398,71 @@ export class Orders implements OnInit {
     if (this.mesaSeleccionada) {
       this.cargarOrdenesDeMesa(this.mesaSeleccionada);
     }
+  }
+
+  // Métodos auxiliares para la UI
+  getStatusIcon(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'schedule';
+      case OrderStatus.IN_PROGRESS:
+        return 'hourglass_empty';
+      case OrderStatus.READY:
+        return 'check_circle';
+      case OrderStatus.DELIVERED:
+        return 'local_shipping';
+      case OrderStatus.CANCELLED:
+        return 'cancel';
+      default:
+        return 'help';
+    }
+  }
+
+  getStatusLabel(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'Pendiente';
+      case OrderStatus.IN_PROGRESS:
+        return 'En Progreso';
+      case OrderStatus.READY:
+        return 'Lista';
+      case OrderStatus.DELIVERED:
+        return 'Entregada';
+      case OrderStatus.CANCELLED:
+        return 'Cancelada';
+      default:
+        return status;
+    }
+  }
+
+  // Métodos para estadísticas
+  getMesasOcupadas(): number {
+    return this.mesas.filter(mesa => this.getMesaEstado(mesa) === 'Ocupada').length;
+  }
+
+  getMesasDisponibles(): number {
+    return this.mesas.filter(mesa => this.getMesaEstado(mesa) === 'Disponible').length;
+  }
+
+  getTotalVentasHoy(): number {
+    return this.todayOrders.reduce((sum, order) => {
+      return sum + (order.valueToPay || 0);
+    }, 0);
+  }
+
+  // Métodos adicionales para información detallada de mesas
+  getMesaOrdersByStatus(mesa: number, status: string): Order[] {
+    return this.getMesaOrders(mesa).filter(order => order.status === status);
+  }
+
+  getMesaTotal(mesa: number): number {
+    return this.getMesaOrders(mesa).reduce((sum, order) => {
+      return sum + (order.valueToPay || 0);
+    }, 0);
+  }
+
+  // Método para obtener órdenes por estado
+  getOrdersByStatus(status: string): Order[] {
+    return this.todayOrders.filter(order => order.status === status);
   }
 }

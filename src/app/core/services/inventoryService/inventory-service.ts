@@ -14,13 +14,24 @@ export class InventoryService {
     this.apiUrl = `${environment.apiUrl}/inventory`;
   }
 
- 
+ getAll(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/all`);
+  }
 
   // Save new inventory item
   save(inventoryRequestDTO: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/save`, inventoryRequestDTO);
   }
 
+  //Add stock to an inventory item
+  addStock(quantity: number, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/add-stock`, { quantity, code });
+  }
+
+// Deduct stock from an inventory item
+  deductStock(quantity: number, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/deduct-stock`, { quantity, code });
+  }
 
   // Update inventory item
   update(updateInventoryDTO: any): Observable<any> {

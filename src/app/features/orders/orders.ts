@@ -7,9 +7,9 @@ import { Order } from './models';
 import { OrderService } from '../../core/services/orderService/order-service';
 import { ProductService } from '../../core/services/productService/product-service';
 import { InventoryService } from '../../core/services/inventoryService/inventory-service';
-import { OrderForm } from './order-form/order-form';
 import { OrderStatus } from '../../shared/enums/order-status';
 import { MatMenuModule } from '@angular/material/menu';
+import { OrderForm } from './order-form/order-form';
 import { OrderDetail } from './order-detail/order-detail';
 import { OrderItemForm } from './order-item-form/order-item-form';
 
@@ -20,8 +20,8 @@ import { OrderItemForm } from './order-item-form/order-item-form';
     CommonModule,
     MatButtonModule,
     MatIconModule,
-    OrderForm,
     MatMenuModule,
+    OrderForm,
     OrderDetail,
     OrderItemForm,
   ],
@@ -97,7 +97,7 @@ export class Orders implements OnInit {
 
   cargarOrdenesDeMesa(mesa: number) {
     this.loadingTableOrders = true;
-    this.orderService.getOrderByTable(mesa).subscribe({
+    this.orderService.getOrderByTableToday(mesa).subscribe({
       next: (data) => {
         this.tableOrders = Array.isArray(data) ? data : [data];
         this.loadingTableOrders = false;
@@ -214,31 +214,31 @@ export class Orders implements OnInit {
     if (this.selectedOrder) {
       console.log('📦 Agregando item a la orden:', itemData);
       console.log('📦 Datos completos del item:', JSON.stringify(itemData, null, 2));
-      
+
       // Primero agregamos el item a la orden
       this.orderService.addOrderItemToOrder(this.selectedOrder.id, itemData).subscribe({
         next: () => {
           console.log('✅ Item agregado a la orden exitosamente');
-          
+
           // Si se agrega exitosamente, descontamos del inventario
           // Usamos el código específico del inventario
           const inventoryCode = itemData.inventoryCode || itemData.productCode || itemData.productName;
-          
+
           console.log('📊 Intentando descontar del inventario:', {
             cantidad: itemData.quantity,
             codigo: inventoryCode,
             itemCompleto: itemData
           });
-          
+
           // Verificar si tenemos un backend correcto
           console.log('🔗 URL del API de inventario:', `${this.inventoryService['apiUrl']}/deduct-stock`);
-          
+
           this.inventoryService.deductStock(itemData.quantity, inventoryCode).subscribe({
             next: (inventoryResponse) => {
               console.log('✅ Inventario actualizado exitosamente:', inventoryResponse);
               this.snackBar.open(
-                `✅ Producto agregado a la orden e inventario actualizado (${itemData.quantity} unidades de "${inventoryCode}" descontadas)`, 
-                'Cerrar', 
+                `✅ Producto agregado a la orden e inventario actualizado (${itemData.quantity} unidades de "${inventoryCode}" descontadas)`,
+                'Cerrar',
                 { duration: 5000 }
               );
               this.onRefreshSelectedOrder(this.selectedOrder!.id);
@@ -253,9 +253,9 @@ export class Orders implements OnInit {
                 error: inventoryError.error,
                 url: inventoryError.url
               });
-              
+
               let errorMessage = '⚠️ Producto agregado a la orden. ';
-              
+
               if (inventoryError.status === 404) {
                 errorMessage += `Advertencia: Producto "${inventoryCode}" no encontrado en inventario`;
               } else if (inventoryError.status === 400) {
@@ -265,7 +265,7 @@ export class Orders implements OnInit {
               } else {
                 errorMessage += `Advertencia: Error ${inventoryError.status} al actualizar inventario`;
               }
-              
+
               console.log('📝 Mensaje de error que se mostrará:', errorMessage);
               this.snackBar.open(errorMessage, 'Cerrar', { duration: 7000 });
               this.onRefreshSelectedOrder(this.selectedOrder!.id);
@@ -282,7 +282,7 @@ export class Orders implements OnInit {
             error: error.error,
             url: error.url
           });
-          
+
           let errorMessage = 'Error al agregar el producto a la orden';
           if (error.status === 404) {
             errorMessage = 'Error: Orden no encontrada';
@@ -291,7 +291,7 @@ export class Orders implements OnInit {
           } else if (error.status === 0) {
             errorMessage = 'Error: No se pudo conectar con el servidor';
           }
-          
+
           this.snackBar.open(errorMessage, 'Cerrar', { duration: 4000 });
         }
       });
@@ -464,5 +464,33 @@ export class Orders implements OnInit {
   // Método para obtener órdenes por estado
   getOrdersByStatus(status: string): Order[] {
     return this.todayOrders.filter(order => order.status === status);
+  }
+
+  // Métodos helper para los productos de la orden
+  getOrderItemsCount(order: Order): number {
+    if (!order) {
+      return 0;
+    }
+
+    // Verificar diferentes posibles nombres de propiedades que puede tener el backend
+    const items = order.orderItemList || (order as any).orderItems || (order as any).items || [];
+
+    if (!Array.isArray(items)) {
+      console.warn('orderItemList no es un array:', items);
+      return 0;
+    }
+
+    const count = items.reduce((total, item: any) => total + (item.quantity || item.cantidad || 1), 0);
+    console.log(`Orden ${order.id} tiene ${count} productos:`, items);
+    return count;
+  }
+
+  calculateOrderTotal(order: Order): number {
+    if (!order || !order.orderItemList) {
+      return 0;
+    }
+    return order.orderItemList.reduce((total, item) => {
+      return total + ((item.unitPrice || 0) * (item.quantity || 0));
+    }, 0);
   }
 }

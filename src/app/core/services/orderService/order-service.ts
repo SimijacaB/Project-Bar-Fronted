@@ -29,6 +29,11 @@ export class OrderService {
     return this.http.get<any>(`${this.apiUrl}/find-by-table-number/${numberTable}`);
   }
 
+  getOrderByTableToday(numberTable: number): Observable<any> {
+    const today = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    return this.http.get<any>(`${this.apiUrl}/find-by-table-number/${numberTable}?date=${today}`);
+  }
+
   updateOrder(updateOrderDTO: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/update`, updateOrderDTO);
   }

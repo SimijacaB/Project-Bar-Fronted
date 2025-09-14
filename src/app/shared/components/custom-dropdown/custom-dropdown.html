@@ -1,0 +1,94 @@
+<div class="custom-dropdown" [class]="'size-' + size + ' variant-' + variant + ' color-' + color"
+  [class.disabled]="disabled" [class.loading]="loading" [class.error]="error" [class.open]="isOpen" #dropdownRef>
+
+  <!-- Dropdown Trigger -->
+  <div class="dropdown-trigger" (click)="toggleDropdown()" [attr.aria-expanded]="isOpen" [attr.aria-haspopup]="true"
+    matRipple [matRippleDisabled]="disabled || loading">
+
+    <div class="trigger-content">
+      <div class="selected-content">
+        @if (loading) {
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <span>Cargando...</span>
+        </div>
+        } @else {
+        <span class="selected-text" [class.placeholder]="!selectedValue && !selectedOptions.length">
+          {{ getSelectedLabel() }}
+        </span>
+        }
+      </div>
+
+      <div class="trigger-actions">
+        @if (clearable && (selectedValue || selectedOptions.length) && !disabled && !loading) {
+        <button type="button" class="clear-btn" (click)="clearSelection(); $event.stopPropagation()"
+          aria-label="Limpiar selección">
+          <mat-icon>close</mat-icon>
+        </button>
+        }
+
+        <div class="dropdown-arrow" [class.rotated]="isOpen">
+          <mat-icon>keyboard_arrow_down</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (error) {
+  <div class="error-message">
+    <mat-icon>error</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+  }
+
+  <!-- Dropdown Menu -->
+  @if (isOpen) {
+  <div class="dropdown-menu" [class.multiple]="multiple" role="listbox" [attr.aria-multiselectable]="multiple">
+
+    <!-- Search Input -->
+    @if (searchable) {
+    <div class="search-container">
+      <mat-icon>search</mat-icon>
+      <input type="text" class="search-input" placeholder="Buscar..." [value]="searchTerm"
+        (input)="onSearchChange($event)">
+    </div>
+    }
+
+    <!-- Options List -->
+    <div class="options-container">
+      @if (filteredOptions.length === 0) {
+      <div class="no-options">
+        <mat-icon>info</mat-icon>
+        <span>No hay opciones disponibles</span>
+      </div>
+      } @else {
+      @for (option of filteredOptions; track option.value) {
+      <div class="dropdown-option" [class.selected]="isSelected(option.value)" [class.disabled]="option.disabled"
+        [style.color]="option.color" (click)="selectOption(option)" role="option"
+        [attr.aria-selected]="isSelected(option.value)" matRipple [matRippleDisabled]="!!option.disabled">
+
+        @if (multiple) {
+        <div class="checkbox" [class.checked]="isSelected(option.value)">
+          @if (isSelected(option.value)) {
+          <mat-icon>check</mat-icon>
+          }
+        </div>
+        }
+
+        @if (option.icon) {
+        <mat-icon class="option-icon">{{ option.icon }}</mat-icon>
+        }
+
+        <span class="option-label">{{ option.label }}</span>
+
+        @if (!multiple && isSelected(option.value)) {
+        <mat-icon class="selected-icon">check</mat-icon>
+        }
+      </div>
+      }
+      }
+    </div>
+  </div>
+  }
+</div>

@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProductService } from '../../../core/services/productService/product-service';
 import { Product } from '../../products/models/Product';
+import { CustomDropdown, DropdownOption } from '../../../shared/components/custom-dropdown/custom-dropdown';
 
 @Component({
     selector: 'app-order-item-form',
@@ -25,7 +26,8 @@ import { Product } from '../../products/models/Product';
         MatInputModule,
         MatSelectModule,
         MatCardModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        CustomDropdown
     ],
     templateUrl: './order-item-form.html',
     styleUrl: './order-item-form.css'
@@ -38,6 +40,7 @@ export class OrderItemForm implements OnInit {
 
     itemForm: FormGroup;
     products: Product[] = [];
+    productDropdownOptions: DropdownOption[] = [];
     selectedProduct: Product | null = null;
     loading = false;
     error = false;
@@ -128,7 +131,7 @@ export class OrderItemForm implements OnInit {
                 if (productsData.length > 0) {
                     console.log('🔍 Analizando primer producto para ver estructura:', productsData[0]);
                     console.log('🔍 Campos disponibles en productos:', Object.keys(productsData[0] || {}));
-                    
+
                     // Filtrar productos disponibles y mapear a la interfaz correcta
                     this.products = productsData
                         .filter(product => {
@@ -140,13 +143,13 @@ export class OrderItemForm implements OnInit {
                         .map(product => {
                             // Buscar el código de inventario en múltiples campos posibles
                             let inventoryCode = null;
-                            
+
                             // Lista de campos donde puede estar el código de inventario
                             const possibleCodeFields = [
-                                'code', 'productCode', 'inventoryCode', 'sku', 
+                                'code', 'productCode', 'inventoryCode', 'sku',
                                 'barcode', 'itemCode', 'productId', 'id'
                             ];
-                            
+
                             // Buscar código en los campos del producto
                             for (const field of possibleCodeFields) {
                                 if (product[field] && typeof product[field] === 'string') {
@@ -159,15 +162,15 @@ export class OrderItemForm implements OnInit {
                                     }
                                 }
                             }
-                            
+
                             // Si no se encontró código, generar uno basado en el ID
                             if (!inventoryCode) {
                                 inventoryCode = `PROD_${product.id}`;
                                 console.log(`📋 Código generado para producto ${product.name}: ${inventoryCode}`);
                             }
-                            
+
                             console.log(`📋 Código final de inventario para '${product.name}': ${inventoryCode}`);
-                            
+
                             return {
                                 id: product.id,
                                 name: product.name || product.productName || 'Sin nombre',
@@ -179,9 +182,11 @@ export class OrderItemForm implements OnInit {
                         });
 
                     console.log('✅ Productos procesados con códigos:', this.products);
+                    this.generateProductDropdownOptions();
                 } else {
                     console.warn('⚠️ No se encontraron productos en la respuesta');
                     this.products = [];
+                    this.productDropdownOptions = [];
                 }
 
                 this.loading = false;
@@ -206,6 +211,32 @@ export class OrderItemForm implements OnInit {
                 );
             }
         });
+    }
+
+    private generateProductDropdownOptions(): void {
+        this.productDropdownOptions = this.products.map(product => ({
+            value: product.id,
+            label: `${product.name} - $${this.formatCurrency(product.price)}`,
+            icon: 'restaurant_menu',
+            disabled: !product.available
+        }));
+    }
+
+    onProductSelectionChange(productId: number): void {
+        const selectedProduct = this.products.find(p => p.id === productId);
+        if (selectedProduct) {
+            this.selectedProduct = selectedProduct;
+            this.itemForm.patchValue({ productId: productId });
+            this.onProductChange();
+        }
+    }
+
+    private formatCurrency(amount: number): string {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(amount);
     }
 
     onProductChange() {
@@ -306,9 +337,9 @@ export class OrderItemForm implements OnInit {
                 productIdValue: this.itemForm.get('productId')?.value,
                 quantityValue: this.itemForm.get('quantity')?.value
             });
-            
+
             let errorMessage = 'Por favor completa todos los campos requeridos';
-            
+
             if (!this.selectedProduct) {
                 errorMessage = 'Por favor selecciona un producto';
             } else if (!this.itemForm.get('quantity')?.value) {
@@ -316,7 +347,7 @@ export class OrderItemForm implements OnInit {
             } else if (this.itemForm.get('quantity')?.value <= 0) {
                 errorMessage = 'La cantidad debe ser mayor a 0';
             }
-            
+
             this.snackBar.open(errorMessage, 'Cerrar', { duration: 3000 });
         }
     }
@@ -333,7 +364,7 @@ export class OrderItemForm implements OnInit {
     debugInventoryCodes() {
         console.log('🐛 =======  DEBUG CÓDIGOS DE INVENTARIO  =======');
         console.log('🐛 Total de productos:', this.products.length);
-        
+
         this.products.forEach((product, index) => {
             console.log(`🐛 Producto ${index + 1}:`, {
                 id: product.id,
@@ -345,33 +376,33 @@ export class OrderItemForm implements OnInit {
         });
 
         console.log('🐛 Producto seleccionado actualmente:', this.selectedProduct);
-        
+
         if (this.selectedProduct) {
             console.log('🐛 Código que se enviará al inventario:', this.selectedProduct.code);
         }
-        
+
         // Buscar específicamente el producto "B01-UN-0002P"
-        const targetProduct = this.products.find(p => 
-            p.code === 'B01-UN-0002P' || 
+        const targetProduct = this.products.find(p =>
+            p.code === 'B01-UN-0002P' ||
             p.name.includes('B01-UN-0002P') ||
             p.id.toString() === 'B01-UN-0002P'
         );
-        
+
         if (targetProduct) {
             console.log('🎯 PRODUCTO B01-UN-0002P ENCONTRADO:', targetProduct);
         } else {
             console.log('❌ PRODUCTO B01-UN-0002P NO ENCONTRADO');
             console.log('🔍 Códigos disponibles:', this.products.map(p => p.code));
         }
-        
+
         console.log('🐛 =======================================');
-        
+
         // Mostrar un snackbar con resumen detallado
-        const debugInfo = `Debug: ${this.products.length} productos cargados. ` + 
-                         `Producto seleccionado: ${this.selectedProduct?.name || 'Ninguno'}. ` +
-                         `Código: ${this.selectedProduct?.code || 'N/A'}. ` +
-                         `B01-UN-0002P encontrado: ${targetProduct ? 'SÍ' : 'NO'}`;
-        
+        const debugInfo = `Debug: ${this.products.length} productos cargados. ` +
+            `Producto seleccionado: ${this.selectedProduct?.name || 'Ninguno'}. ` +
+            `Código: ${this.selectedProduct?.code || 'N/A'}. ` +
+            `B01-UN-0002P encontrado: ${targetProduct ? 'SÍ' : 'NO'}`;
+
         this.snackBar.open(debugInfo, 'Cerrar', { duration: 15000 });
     }
 }

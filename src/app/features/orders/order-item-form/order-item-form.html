@@ -28,79 +28,26 @@
       <!-- Finaliza -->
       <!-- Se deshabilita agregar producto cuando la orden esté entregada -->
       <div class="form-container-fullscreen">
-        <mat-card
-          class="form-card-fullscreen"
-          [ngClass]="{'disabled-form': !isFormEnabled()}"
-        >
+        <mat-card class="form-card-fullscreen" [ngClass]="{'disabled-form': !isFormEnabled()}">
           <mat-card-content>
             <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
               <!-- Selector de producto -->
-              <mat-form-field appearance="outline" class="form-field-fullscreen">
-                <mat-label>Producto</mat-label>
-                <mat-select
-                  formControlName="productId"
-                  (selectionChange)="onProductChange()"
-                  [disabled]="loading || !isFormEnabled()"
-                >
-                  @if (loading) {
-                  <mat-option disabled>
-                    <div style="display: flex; align-items: center; gap: 8px">
-                      <mat-spinner diameter="16"></mat-spinner>
-                      <span>Cargando productos...</span>
-                    </div>
-                  </mat-option>
-                  } @else if (error) {
-                  <mat-option disabled>
-                    <div
-                      style="
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        color: #f44336;
-                      "
-                    >
-                      <mat-icon>error</mat-icon>
-                      <span>Error al cargar productos</span>
-                    </div>
-                  </mat-option>
-                  } @else if (products.length === 0) {
-                  <mat-option disabled>
-                    <div
-                      style="
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        color: #ff9800;
-                      "
-                    >
-                      <mat-icon>warning</mat-icon>
-                      <span>No hay productos disponibles</span>
-                    </div>
-                  </mat-option>
-                  } @else { @for (product of products; track product.id) {
-                  <mat-option [value]="product.id">
-                    {{ product.name }}
-                  </mat-option>
-                  } }
-                </mat-select>
-                @if (itemForm.get('productId')?.hasError('required') &&
-                itemForm.get('productId')?.touched) {
-                <mat-error>Selecciona un producto</mat-error>
-                }
-              </mat-form-field>
+              <div class="form-field-fullscreen">
+                <label class="field-label">Producto *</label>
+                <app-custom-dropdown [options]="productDropdownOptions"
+                  [selectedValue]="itemForm.get('productId')?.value" placeholder="Selecciona un producto"
+                  [loading]="loading"
+                  [error]="itemForm.get('productId')?.hasError('required') && itemForm.get('productId')?.touched ? 'Selecciona un producto' : ''"
+                  [disabled]="loading || !isFormEnabled()" [searchable]="true" size="medium" variant="outlined"
+                  color="primary" (selectionChange)="onProductSelectionChange($event)">
+                </app-custom-dropdown>
+              </div>
 
               <!-- Campo de cantidad -->
               <mat-form-field appearance="outline" class="form-field-fullscreen">
                 <mat-label>Cantidad</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  formControlName="quantity"
-                  placeholder="Ingrese la cantidad"
-                  min="1"
-                  [disabled]="!selectedProduct || !isFormEnabled()"
-                  (input)="onQuantityChange()"
-                />
+                <input matInput type="number" formControlName="quantity" placeholder="Ingrese la cantidad" min="1"
+                  [disabled]="!selectedProduct || !isFormEnabled()" (input)="onQuantityChange()" />
                 @if (itemForm.get('quantity')?.hasError('required') &&
                 itemForm.get('quantity')?.touched) {
                 <mat-error>La cantidad es requerida</mat-error>
@@ -128,7 +75,8 @@
                   </div>
                   <div class="preview-row">
                     <span class="preview-label">Precio Unitario:</span>
-                    <span class="preview-value price">{{ selectedProduct.price | currency:'COP':'symbol':'1.0-0' }}</span>
+                    <span class="preview-value price">{{ selectedProduct.price | currency:'COP':'symbol':'1.0-0'
+                      }}</span>
                   </div>
                   <div class="preview-row">
                     <span class="preview-label">Cantidad:</span>
@@ -136,7 +84,8 @@
                   </div>
                   <div class="total-row">
                     <span class="preview-label">Total:</span>
-                    <span class="preview-value total">{{ (selectedProduct.price * itemForm.get('quantity')?.value) | currency:'COP':'symbol':'1.0-0' }}</span>
+                    <span class="preview-value total">{{ (selectedProduct.price * itemForm.get('quantity')?.value) |
+                      currency:'COP':'symbol':'1.0-0' }}</span>
                   </div>
                 </div>
               </div>
@@ -145,13 +94,8 @@
               <!-- Botón para recargar productos si hay error -->
               @if (error) {
               <div class="error-actions">
-                <button
-                  type="button"
-                  mat-raised-button
-                  color="warn"
-                  (click)="loadProducts()"
-                  [disabled]="!isFormEnabled()"
-                >
+                <button type="button" mat-raised-button color="warn" (click)="loadProducts()"
+                  [disabled]="!isFormEnabled()">
                   <mat-icon>refresh</mat-icon>
                   Reintentar cargar productos
                 </button>
@@ -172,11 +116,7 @@
                   <mat-icon>bug_report</mat-icon>
                   Debug Códigos
                 </button>
-                <button
-                  type="submit"
-                  class="btn-primary"
-                  [disabled]="itemForm.invalid || loading"
-                >
+                <button type="submit" class="btn-primary" [disabled]="itemForm.invalid || loading">
                   <mat-icon>add_shopping_cart</mat-icon>
                   Agregar Producto
                 </button>

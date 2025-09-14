@@ -1,6 +1,6 @@
 <!-- Módulo de Gestión de Órdenes -->
 <div class="orders-container min-h-screen bg-gradient-to-br from-b-500 to-b-100">
-  
+
   <!-- Header Principal con Herramientas -->
   <div class="header-section">
     <div class="header-card">
@@ -10,232 +10,228 @@
             <mat-icon class="title-icon">restaurant_menu</mat-icon>
             Gestión de Órdenes
           </h1>
-          <p class="subtitle">Sistema completo de administración de órdenes y mesas del restaurante</p>
-          <div class="header-stats">
-            <div class="mini-stat">
-              <mat-icon>today</mat-icon>
-              <span>{{ todayOrders.length }} órdenes hoy</span>
-            </div>
-            <div class="mini-stat">
-              <mat-icon>table_restaurant</mat-icon>
-              <span>{{ getMesasOcupadas() }}/{{ mesas.length }} mesas ocupadas</span>
-            </div>
-            <div class="mini-stat">
-              <mat-icon>attach_money</mat-icon>
-              <span>{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }} en ventas</span>
+          <div class="subtitle-section">
+            <p class="subtitle">Sistema completo de administración de órdenes y mesas del restaurante</p>
+            <div class="header-stats">
+              <div class="mini-stat">
+                <mat-icon>today</mat-icon>
+                <span>{{ todayOrders.length }} órdenes hoy</span>
+              </div>
+              <div class="mini-stat">
+                <mat-icon>table_restaurant</mat-icon>
+                <span>{{ getMesasOcupadas() }}/{{ mesas.length }} mesas ocupadas</span>
+              </div>
+              <div class="mini-stat">
+                <mat-icon>attach_money</mat-icon>
+                <span>{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }} en ventas</span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div class="header-actions">
-          <button class="modern-action-btn refresh-btn" (click)="loadOrders()">
-            <mat-icon>refresh</mat-icon>
-            <span>Actualizar Todo</span>
-          </button>
-          <button class="new-order-btn" (click)="onOpenNewOrderModal()">
-            <mat-icon>add_circle</mat-icon>
-            <span>Nueva Orden</span>
-          </button>
+
+          <div class="header-actions">
+            <button class="modern-action-btn refresh-btn" (click)="loadOrders()">
+              <mat-icon>refresh</mat-icon>
+              <span>Actualizar Todo</span>
+            </button>
+            <button class="new-order-btn" (click)="onOpenNewOrderModal()">
+              <mat-icon>add_circle</mat-icon>
+              <span>Nueva Orden</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modales -->
-  @if (showNewOrderModal) {
-    <app-order-form 
-      [tableNumber]="mesaSeleccionada || undefined" 
-      (createOrder)="onCreateOrder($event)" 
-      (close)="onCloseNewOrderModal()">
-    </app-order-form>
-  }
+    <!-- Modales -->
+    <ng-container *ngIf="showNewOrderModal">
+      <app-order-form [tableNumber]="mesaSeleccionada || undefined" (createOrder)="onCreateOrder($event)"
+        (close)="onCloseNewOrderModal()">
+      </app-order-form>
+    </ng-container>
 
-  @if (showOrderDetails && selectedOrder) {
-  <app-order-detail [order]="selectedOrder" [visible]="showOrderDetails" (close)="onCloseOrderDetails()"
-    (refreshOrder)="onRefreshSelectedOrder($event)" (addItem)="onAddItemToOrder($event)"
-    (removeItem)="onRemoveItemFromOrder($event)"></app-order-detail>
-  }
+    <ng-container *ngIf="showOrderDetails && selectedOrder">
+      <app-order-detail [order]="selectedOrder" [visible]="showOrderDetails" (close)="onCloseOrderDetails()"
+        (refreshOrder)="onRefreshSelectedOrder($event)" (addItem)="onAddItemToOrder($event)"
+        (removeItem)="onRemoveItemFromOrder($event)"></app-order-detail>
+    </ng-container>
 
-  @if (showAddItemModal && selectedOrder) {
-  <app-order-item-form 
-    [orderId]="selectedOrder.id" 
-    [orderStatus]="selectedOrder.status"
-    (addItem)="onAddItemToSelectedOrder($event)"
-    (close)="onCloseAddItemModal()">
-  </app-order-item-form>
-  }
+    <ng-container *ngIf="showAddItemModal && selectedOrder">
+      <app-order-item-form [orderId]="selectedOrder.id" [orderStatus]="selectedOrder.status"
+        (addItem)="onAddItemToSelectedOrder($event)" (close)="onCloseAddItemModal()">
+      </app-order-item-form>
+    </ng-container>
 
-  <!-- Vista de Mesas (cuando no hay mesa seleccionada) -->
-  @if (!mesaSeleccionada) {
-    <div class="content-container">
-      <!-- Estadísticas Avanzadas del Día -->
-      <div class="stats-section">
-        <div class="section-header-enhanced">
-          <h2 class="section-title">Dashboard del Día</h2>
-          <p class="section-subtitle">Resumen completo de la operación del restaurante</p>
-        </div>
-        
-        <!-- Estadísticas Principales -->
-        <div class="stats-grid-enhanced">
-          <!-- Órdenes Totales -->
-          <div class="stats-card main-stat">
-            <div class="stats-content">
-              <div class="stats-icon-wrapper bg-blue-100">
-                <mat-icon class="text-blue-600">receipt_long</mat-icon>
-              </div>
-              <div class="stats-info">
-                <div class="stats-number">{{ todayOrders.length }}</div>
-                <div class="stats-label">Órdenes de Hoy</div>
-                <div class="stats-trend">
-                  <mat-icon class="trend-icon positive">trending_up</mat-icon>
-                  <span class="trend-text">+12% vs ayer</span>
+    <!-- Vista de Mesas (cuando no hay mesa seleccionada) -->
+    <ng-container *ngIf="!mesaSeleccionada">
+      <div class="content-container">
+        <!-- Estadísticas Avanzadas del Día -->
+        <div class="stats-section">
+          <div class="section-header-enhanced">
+            <h2 class="section-title">Dashboard del Día</h2>
+            <p class="section-subtitle">Resumen completo de la operación del restaurante</p>
+          </div>
+
+          <!-- Estadísticas Principales -->
+          <div class="stats-grid-enhanced">
+            <!-- Órdenes Totales -->
+            <div class="stats-card main-stat">
+              <div class="stats-content">
+                <div class="stats-icon-wrapper bg-blue-100">
+                  <mat-icon class="text-blue-600">receipt_long</mat-icon>
+                </div>
+                <div class="stats-info">
+                  <div class="stats-number">{{ todayOrders.length }}</div>
+                  <div class="stats-label">Órdenes de Hoy</div>
+                  <div class="stats-trend">
+                    <mat-icon class="trend-icon positive">trending_up</mat-icon>
+                    <span class="trend-text">+12% vs ayer</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Mesas Ocupadas -->
-          <div class="stats-card main-stat">
-            <div class="stats-content">
-              <div class="stats-icon-wrapper bg-orange-100">
-                <mat-icon class="text-orange-600">table_restaurant</mat-icon>
+            <!-- Mesas Ocupadas -->
+            <div class="stats-card main-stat">
+              <div class="stats-content">
+                <div class="stats-icon-wrapper bg-orange-100">
+                  <mat-icon class="text-orange-600">table_restaurant</mat-icon>
+                </div>
+                <div class="stats-info">
+                  <div class="stats-number">{{ getMesasOcupadas() }}/{{ mesas.length }}</div>
+                  <div class="stats-label">Mesas Ocupadas</div>
+                  <div class="stats-progress">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="(getMesasOcupadas() / mesas.length) * 100"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="stats-info">
-                <div class="stats-number">{{ getMesasOcupadas() }}/{{ mesas.length }}</div>
-                <div class="stats-label">Mesas Ocupadas</div>
-                <div class="stats-progress">
-                  <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="(getMesasOcupadas() / mesas.length) * 100"></div>
+            </div>
+
+            <!-- Ventas del Día -->
+            <div class="stats-card main-stat">
+              <div class="stats-content">
+                <div class="stats-icon-wrapper bg-green-100">
+                  <mat-icon class="text-green-600">attach_money</mat-icon>
+                </div>
+                <div class="stats-info">
+                  <div class="stats-number">{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }}</div>
+                  <div class="stats-label">Ventas del Día</div>
+                  <div class="stats-trend">
+                    <mat-icon class="trend-icon positive">trending_up</mat-icon>
+                    <span class="trend-text">+8% vs ayer</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Promedio por Mesa -->
+            <div class="stats-card main-stat">
+              <div class="stats-content">
+                <div class="stats-icon-wrapper bg-purple-100">
+                  <mat-icon class="text-purple-600">calculate</mat-icon>
+                </div>
+                <div class="stats-info">
+                  <div class="stats-number">{{ getMesasOcupadas() > 0 ? (getTotalVentasHoy() / getMesasOcupadas() |
+                    currency:'COP':'symbol':'1.0-0') : '$0' }}</div>
+                  <div class="stats-label">Promedio por Mesa</div>
+                  <div class="stats-detail">
+                    <span class="detail-text">{{ getMesasOcupadas() }} mesas activas</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Ventas del Día -->
-          <div class="stats-card main-stat">
-            <div class="stats-content">
-              <div class="stats-icon-wrapper bg-green-100">
-                <mat-icon class="text-green-600">attach_money</mat-icon>
+          <!-- Estadísticas por Estado -->
+          <div class="status-overview">
+            <h3 class="overview-title">Estados de Órdenes</h3>
+            <div class="status-cards">
+              <div class="status-card pending">
+                <div class="status-icon">
+                  <mat-icon>schedule</mat-icon>
+                </div>
+                <div class="status-info">
+                  <div class="status-count">{{ getOrdersByStatus('PENDING').length }}</div>
+                  <div class="status-label">Pendientes</div>
+                </div>
               </div>
-              <div class="stats-info">
-                <div class="stats-number">{{ getTotalVentasHoy() | currency:'COP':'symbol':'1.0-0' }}</div>
-                <div class="stats-label">Ventas del Día</div>
-                <div class="stats-trend">
-                  <mat-icon class="trend-icon positive">trending_up</mat-icon>
-                  <span class="trend-text">+8% vs ayer</span>
+
+              <div class="status-card progress">
+                <div class="status-icon">
+                  <mat-icon>hourglass_empty</mat-icon>
+                </div>
+                <div class="status-info">
+                  <div class="status-count">{{ getOrdersByStatus('IN_PROGRESS').length }}</div>
+                  <div class="status-label">En Cocina</div>
+                </div>
+              </div>
+
+              <div class="status-card ready">
+                <div class="status-icon">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+                <div class="status-info">
+                  <div class="status-count">{{ getOrdersByStatus('READY').length }}</div>
+                  <div class="status-label">Listas</div>
+                </div>
+              </div>
+
+              <div class="status-card delivered">
+                <div class="status-icon">
+                  <mat-icon>local_shipping</mat-icon>
+                </div>
+                <div class="status-info">
+                  <div class="status-count">{{ getOrdersByStatus('DELIVERED').length }}</div>
+                  <div class="status-label">Entregadas</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Mesas Mejorada -->
+        <div class="mesas-section">
+          <div class="section-header-enhanced">
+            <div class="header-content">
+              <h2 class="section-title">Administración de Mesas</h2>
+              <p class="section-subtitle">Selecciona una mesa para ver y gestionar sus órdenes activas</p>
+            </div>
+            <div class="section-controls">
+              <div class="view-toggle">
+                <button class="toggle-btn active">
+                  <mat-icon>grid_view</mat-icon>
+                  Vista Cuadrícula
+                </button>
+                <button class="toggle-btn">
+                  <mat-icon>view_list</mat-icon>
+                  Vista Lista
+                </button>
+              </div>
+              <div class="filter-chips">
+                <div class="filter-chip all active">
+                  <span>Todas ({{ mesas.length }})</span>
+                </div>
+                <div class="filter-chip occupied">
+                  <mat-icon>people</mat-icon>
+                  <span>Ocupadas ({{ getMesasOcupadas() }})</span>
+                </div>
+                <div class="filter-chip available">
+                  <mat-icon>event_available</mat-icon>
+                  <span>Disponibles ({{ getMesasDisponibles() }})</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Promedio por Mesa -->
-          <div class="stats-card main-stat">
-            <div class="stats-content">
-              <div class="stats-icon-wrapper bg-purple-100">
-                <mat-icon class="text-purple-600">calculate</mat-icon>
-              </div>
-              <div class="stats-info">
-                <div class="stats-number">{{ getMesasOcupadas() > 0 ? (getTotalVentasHoy() / getMesasOcupadas() | currency:'COP':'symbol':'1.0-0') : '$0' }}</div>
-                <div class="stats-label">Promedio por Mesa</div>
-                <div class="stats-detail">
-                  <span class="detail-text">{{ getMesasOcupadas() }} mesas activas</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Estadísticas por Estado -->
-        <div class="status-overview">
-          <h3 class="overview-title">Estados de Órdenes</h3>
-          <div class="status-cards">
-            <div class="status-card pending">
-              <div class="status-icon">
-                <mat-icon>schedule</mat-icon>
-              </div>
-              <div class="status-info">
-                <div class="status-count">{{ getOrdersByStatus('PENDING').length }}</div>
-                <div class="status-label">Pendientes</div>
-              </div>
-            </div>
-
-            <div class="status-card progress">
-              <div class="status-icon">
-                <mat-icon>hourglass_empty</mat-icon>
-              </div>
-              <div class="status-info">
-                <div class="status-count">{{ getOrdersByStatus('IN_PROGRESS').length }}</div>
-                <div class="status-label">En Cocina</div>
-              </div>
-            </div>
-
-            <div class="status-card ready">
-              <div class="status-icon">
-                <mat-icon>check_circle</mat-icon>
-              </div>
-              <div class="status-info">
-                <div class="status-count">{{ getOrdersByStatus('READY').length }}</div>
-                <div class="status-label">Listas</div>
-              </div>
-            </div>
-
-            <div class="status-card delivered">
-              <div class="status-icon">
-                <mat-icon>local_shipping</mat-icon>
-              </div>
-              <div class="status-info">
-                <div class="status-count">{{ getOrdersByStatus('DELIVERED').length }}</div>
-                <div class="status-label">Entregadas</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección de Mesas Mejorada -->
-      <div class="mesas-section">
-        <div class="section-header-enhanced">
-          <div class="header-content">
-            <h2 class="section-title">Administración de Mesas</h2>
-            <p class="section-subtitle">Selecciona una mesa para ver y gestionar sus órdenes activas</p>
-          </div>
-          <div class="section-controls">
-            <div class="view-toggle">
-              <button class="toggle-btn active">
-                <mat-icon>grid_view</mat-icon>
-                Vista Cuadrícula
-              </button>
-              <button class="toggle-btn">
-                <mat-icon>view_list</mat-icon>
-                Vista Lista
-              </button>
-            </div>
-            <div class="filter-chips">
-              <div class="filter-chip all active">
-                <span>Todas ({{ mesas.length }})</span>
-              </div>
-              <div class="filter-chip occupied">
-                <mat-icon>people</mat-icon>
-                <span>Ocupadas ({{ getMesasOcupadas() }})</span>
-              </div>
-              <div class="filter-chip available">
-                <mat-icon>event_available</mat-icon>
-                <span>Disponibles ({{ getMesasDisponibles() }})</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="mesas-grid-enhanced">
-          @for (mesa of mesas; track mesa) {
-            <div class="mesa-card-enhanced group cursor-pointer transform transition-all duration-300 hover:scale-105"
+          <div class="mesas-grid-enhanced">
+            <div *ngFor="let mesa of mesas"
+              class="mesa-card-enhanced group cursor-pointer transform transition-all duration-300 hover:scale-105"
               [ngClass]="{
                 'mesa-ocupada': getMesaEstado(mesa) === 'Ocupada',
                 'mesa-disponible': getMesaEstado(mesa) === 'Disponible'
-              }"
-              (click)="getMesaEstado(mesa) === 'Ocupada' ? seleccionarMesa(mesa) : null">
-              
+              }" (click)="getMesaEstado(mesa) === 'Ocupada' ? seleccionarMesa(mesa) : null">
+
               <!-- Header de la Mesa -->
               <div class="mesa-header-card">
                 <div class="mesa-title">
@@ -254,10 +250,10 @@
                   {{ getMesaEstado(mesa) }}
                 </div>
               </div>
-              
+
               <!-- Contenido de la Mesa -->
               <div class="mesa-content">
-                @if (getMesaEstado(mesa) === 'Ocupada') {
+                <ng-container *ngIf="getMesaEstado(mesa) === 'Ocupada'">
                   <!-- Información Detallada -->
                   <div class="mesa-info-detailed">
                     <div class="info-row">
@@ -293,18 +289,17 @@
                   <div class="mesa-timeline">
                     <div class="timeline-title">Actividad Reciente:</div>
                     <div class="timeline-items">
-                      @for (order of getMesaOrders(mesa).slice(0, 2); track order.id) {
-                        <div class="timeline-item">
-                          <div class="timeline-dot" [ngClass]="'status-' + order.status.toLowerCase()"></div>
-                          <div class="timeline-content">
-                            <span class="timeline-text">Orden #{{ order.id }}</span>
-                            <span class="timeline-time">{{ order.date | date:'HH:mm' }}</span>
-                          </div>
+                      <div *ngFor="let order of getMesaOrders(mesa).slice(0,2)" class="timeline-item">
+                        <div class="timeline-dot" [ngClass]="'status-' + order.status.toLowerCase()"></div>
+                        <div class="timeline-content">
+                          <span class="timeline-text">Orden #{{ order.id }}</span>
+                          <span class="timeline-time">{{ order.date | date:'HH:mm' }}</span>
                         </div>
-                      }
+                      </div>
                     </div>
                   </div>
-                } @else {
+                </ng-container>
+                <ng-container *ngIf="getMesaEstado(mesa) !== 'Ocupada'">
                   <!-- Mesa Disponible -->
                   <div class="mesa-available">
                     <div class="available-icon-large">
@@ -315,236 +310,230 @@
                       <p>Lista para recibir nuevos clientes</p>
                     </div>
                     <div class="available-actions">
-                      <button 
-                        class="quick-order-btn" 
-                        (click)="onOpenNewOrderModalForTable(mesa); $event.stopPropagation()"
-                        [attr.aria-label]="'Crear nueva orden para mesa ' + mesa"
-                        matRipple
-                      >
+                      <button class="quick-order-btn" (click)="onOpenNewOrderModal(); $event.stopPropagation()"
+                        [attr.aria-label]="'Crear nueva orden para mesa ' + mesa" matRipple>
                         <mat-icon>restaurant_menu</mat-icon>
                         Crear Orden
                       </button>
                     </div>
                   </div>
-                }
+                </ng-container>
               </div>
-              
+
               <!-- Footer con Acciones -->
               <div class="mesa-footer">
-                @if (getMesaEstado(mesa) === 'Ocupada') {
+                <ng-container *ngIf="getMesaEstado(mesa) === 'Ocupada'">
                   <button class="mesa-action-btn primary">
                     <mat-icon>visibility</mat-icon>
                     <span>Ver Órdenes ({{ getMesaOrders(mesa).length }})</span>
                   </button>
-                } @else {
+                </ng-container>
+                <ng-container *ngIf="getMesaEstado(mesa) !== 'Ocupada'">
                   <div class="mesa-capacity">
                     <mat-icon>people</mat-icon>
                     <span>Capacidad: 4 personas</span>
                   </div>
-                }
+                </ng-container>
               </div>
             </div>
-          }
+          </div>
         </div>
       </div>
-    </div>
-  }
-  <!-- Vista de Órdenes de Mesa Seleccionada -->
-  @if (mesaSeleccionada) {
-  <div class="max-w-7xl mx-auto">
-    <!-- Header de Mesa Seleccionada -->
-    <div class="mesa-header bg-white rounded-2xl shadow-lg p-6 mb-6">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-4">
-          <div class="mesa-icon-large">
-            <mat-icon class="text-4xl text-blue-600">table_restaurant</mat-icon>
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-800">Mesa {{ mesaSeleccionada }}</h2>
-            <div class="flex items-center gap-4 mt-1">
-              <span class="text-gray-600">{{ tableOrders.length }} órdenes activas</span>
-              <button 
-                class="modern-action-btn refresh-btn"
-                (click)="refreshTableOrders()">
-                <mat-icon>refresh</mat-icon>
-                <span>Actualizar</span>
+    </ng-container>
+    
+    <!-- Vista de Órdenes de Mesa Seleccionada -->
+      <ng-container *ngIf="mesaSeleccionada">
+        <div class="max-w-7xl mx-auto">
+          <!-- Header de Mesa Seleccionada -->
+          <div class="mesa-header bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-4">
+                <div class="mesa-icon-large">
+                  <mat-icon class="text-4xl text-blue-600">table_restaurant</mat-icon>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold text-gray-800">Mesa {{ mesaSeleccionada }}</h2>
+                  <div class="flex items-center gap-4 mt-1">
+                    <span class="text-gray-600">{{ tableOrders.length }} órdenes activas</span>
+                    <button class="modern-action-btn refresh-btn" (click)="refreshTableOrders()">
+                      <mat-icon>refresh</mat-icon>
+                      <span>Actualizar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button class="modern-action-btn back-btn" (click)="deseleccionarMesa()">
+                <mat-icon>arrow_back</mat-icon>
+                <span>Volver a Mesas</span>
               </button>
             </div>
           </div>
-        </div>
-        <button 
-          class="modern-action-btn back-btn"
-          (click)="deseleccionarMesa()">
-          <mat-icon>arrow_back</mat-icon>
-          <span>Volver a Mesas</span>
-        </button>
-      </div>
-    </div>
 
-    <!-- Loading State -->
-    @if (loadingTableOrders) {
-    <div class="loading-container">
-      <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <p class="loading-text">Cargando órdenes de la mesa...</p>
-      </div>
-    </div>
-    }
+          <!-- Loading State -->
+          <ng-container *ngIf="loadingTableOrders">
+            <div class="loading-container">
+              <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p class="loading-text">Cargando órdenes de la mesa...</p>
+              </div>
+            </div>
+          </ng-container>
 
-    <!-- Lista de Órdenes -->
-    @if (!loadingTableOrders && tableOrders.length > 0) {
-    <div class="orders-grid">
-      @for (order of tableOrders; track order.id) {
-      <div class="order-card modern-card">
-        <!-- Header de la Orden -->
-        <div class="order-card-header">
-          <div class="order-info">
-            <h3 class="order-title">
-              <mat-icon class="order-icon">receipt</mat-icon>
-              Orden #{{ order.id }}
-            </h3>
-            <p class="order-date">{{ order.date | date:'medium' }}</p>
-          </div>
-          <div class="order-status-container">
-            <span class="order-status-badge" [ngClass]="{
+          <!-- Lista de Órdenes -->
+          <ng-container *ngIf="!loadingTableOrders && tableOrders.length > 0">
+            <div class="orders-grid">
+              <div *ngFor="let order of tableOrders" class="order-card modern-card">
+                <!-- Header de la Orden -->
+                <div class="order-card-header">
+                  <div class="order-info">
+                    <h3 class="order-title">
+                      <mat-icon class="order-icon">receipt</mat-icon>
+                      Orden #{{ order.id }}
+                    </h3>
+                    <p class="order-date">{{ order.date | date:'medium' }}</p>
+                  </div>
+                  <div class="order-status-container">
+                    <span class="order-status-badge" [ngClass]="{
               'status-pending': order.status === OrderStatus.PENDING,
               'status-progress': order.status === OrderStatus.IN_PROGRESS,
               'status-ready': order.status === OrderStatus.READY,
               'status-delivered': order.status === OrderStatus.DELIVERED,
               'status-cancelled': order.status === OrderStatus.CANCELLED
             }">
-              <mat-icon class="status-icon">
-                {{ getStatusIcon(order.status) }}
-              </mat-icon>
-              {{ getStatusLabel(order.status) }}
-            </span>
-          </div>
-        </div>
+                      <mat-icon class="status-icon">
+                        {{ getStatusIcon(order.status) }}
+                      </mat-icon>
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </div>
+                </div>
 
-        <!-- Contenido de la Orden -->
-        <div class="order-card-content">
-          <!-- Información del Cliente -->
-          <div class="client-info">
-            <div class="info-row">
-              <mat-icon class="info-icon">person</mat-icon>
-              <span class="info-label">Cliente:</span>
-              <span class="info-value">{{ order.clientName || 'No especificado' }}</span>
-            </div>
-            <div class="info-row">
-              <mat-icon class="info-icon">attach_money</mat-icon>
-              <span class="info-label">Total:</span>
-              <span class="info-value total-amount">{{ order.valueToPay | currency:'COP':'symbol':'1.0-0' }}</span>
-            </div>
-          </div>
-
-          <!-- Lista de Productos -->
-          <div class="products-container">
-            <h4 class="products-header">
-              <mat-icon class="products-icon">restaurant_menu</mat-icon>
-              Productos ({{ (order.orderItemList || []).length }})
-            </h4>
-            @if (order.orderItemList && order.orderItemList.length > 0) {
-              <ul class="products-list modern-list">
-                @for (item of order.orderItemList; track item.id) {
-                  <li class="product-item">
-                    <div class="product-info">
-                      <span class="product-quantity">{{ item.quantity }}x</span>
-                      <span class="product-name">{{ item.productName }}</span>
+                <!-- Contenido de la Orden -->
+                <div class="order-card-content">
+                  <!-- Información del Cliente -->
+                  <div class="client-info">
+                    <div class="info-row">
+                      <mat-icon class="info-icon">person</mat-icon>
+                      <span class="info-label">Cliente:</span>
+                      <span class="info-value">{{ order.clientName || 'No especificado' }}</span>
                     </div>
-                    <span class="product-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol':'1.0-0' }}</span>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <div class="empty-products">
-                <mat-icon>restaurant</mat-icon>
-                <span>No hay productos en esta orden</span>
+                    <div class="info-row">
+                      <mat-icon class="info-icon">attach_money</mat-icon>
+                      <span class="info-label">Total:</span>
+                      <span class="info-value total-amount">{{ order.valueToPay | currency:'COP':'symbol':'1.0-0'
+                        }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Lista de Productos -->
+                  <div class="products-container">
+                    <div class="products-header">
+                      <div class="products-title">
+                        <mat-icon class="products-icon">restaurant_menu</mat-icon>
+                        <span>Productos</span>
+                        <span class="products-count">({{ getOrderItemsCount(order) }})</span>
+                      </div>
+                      <ng-container *ngIf="getOrderItemsCount(order) > 0">
+                        <div class="products-total">
+                          <span class="total-label">Total:</span>
+                          <span class="total-amount">{{ calculateOrderTotal(order) | currency:'COP':'symbol':'1.0-0'
+                            }}</span>
+                        </div>
+                      </ng-container>
+                    </div>
+                    <ng-container *ngIf="getOrderItemsCount(order) > 0">
+                      <div class="products-list-container">
+                        <div *ngFor="let item of order.orderItemList" class="product-item">
+                          <div class="product-main-info">
+                            <div class="product-quantity-badge">{{ item.quantity }}</div>
+                            <div class="product-details">
+                              <span class="product-name">{{ item.productName }}</span>
+                              <span class="product-unit-price">{{ item.unitPrice | currency:'COP':'symbol':'1.0-0' }}
+                                c/u</span>
+                            </div>
+                          </div>
+                          <div class="product-total-price">
+                            {{ (item.unitPrice * item.quantity) | currency:'COP':'symbol':'1.0-0' }}
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="getOrderItemsCount(order) === 0">
+                      <div class="no-products-message">
+                        <mat-icon>inventory_2</mat-icon>
+                        <span>Esta orden aún no tiene productos agregados</span>
+                      </div>
+                    </ng-container>
+                  </div>
+
+                  <!-- Acciones de la Orden -->
+                  <div class="order-card-actions">
+                    <button class="action-btn-icon primary-btn" (click)="onViewOrderDetails(order)"
+                      title="Ver Detalles">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+
+                    <button class="action-btn-icon secondary-btn" [matMenuTriggerFor]="statusMenu"
+                      title="Cambiar Estado">
+                      <mat-icon>swap_horiz</mat-icon>
+                    </button>
+                    <mat-menu #statusMenu="matMenu" class="status-menu">
+                      <button mat-menu-item
+                        (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.PENDING})"
+                        [disabled]="order.status === OrderStatus.PENDING" class="status-menu-item pending">
+                        <mat-icon>schedule</mat-icon>
+                        <span>Pendiente</span>
+                      </button>
+                      <button mat-menu-item
+                        (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.IN_PROGRESS})"
+                        [disabled]="order.status === OrderStatus.IN_PROGRESS" class="status-menu-item progress">
+                        <mat-icon>hourglass_empty</mat-icon>
+                        <span>En Progreso</span>
+                      </button>
+                      <button mat-menu-item
+                        (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.READY})"
+                        [disabled]="order.status === OrderStatus.READY" class="status-menu-item ready">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Lista</span>
+                      </button>
+                      <button mat-menu-item
+                        (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.DELIVERED})"
+                        [disabled]="order.status === OrderStatus.DELIVERED" class="status-menu-item delivered">
+                        <mat-icon>local_shipping</mat-icon>
+                        <span>Entregada</span>
+                      </button>
+                      <button mat-menu-item
+                        (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.CANCELLED})"
+                        [disabled]="order.status === OrderStatus.CANCELLED" class="status-menu-item cancelled">
+                        <mat-icon>cancel</mat-icon>
+                        <span>Cancelada</span>
+                      </button>
+                    </mat-menu>
+
+                    <button class="action-btn-icon danger-btn" (click)="handleDeleteOrder(order.id)" title="Eliminar">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
               </div>
-            }
-          </div>
+            </div>
+          </ng-container>
+
+          <!-- Estado Vacío -->
+          <ng-container *ngIf="!loadingTableOrders && tableOrders.length === 0">
+            <div class="empty-state-container">
+              <div class="empty-state-content">
+                <mat-icon class="empty-icon">info</mat-icon>
+                <h3 class="empty-title">No hay órdenes en la Mesa {{ mesaSeleccionada }}</h3>
+                <p class="empty-description">Esta mesa no tiene órdenes activas en este momento</p>
+                <button class="modern-action-btn add-item-btn" (click)="deseleccionarMesa()">
+                  <mat-icon>arrow_back</mat-icon>
+                  <span>Volver a las Mesas</span>
+                </button>
+              </div>
+            </div>
+          </ng-container>
         </div>
-
-        <!-- Acciones de la Orden -->
-        <div class="order-card-actions">
-          <button 
-            class="action-btn primary-btn" 
-            (click)="onViewOrderDetails(order)">
-            <mat-icon>visibility</mat-icon>
-            Ver Detalles
-          </button>
-
-          <button 
-            class="action-btn secondary-btn" 
-            [matMenuTriggerFor]="statusMenu">
-            <mat-icon>swap_horiz</mat-icon>
-            Cambiar Estado
-          </button>
-          <mat-menu #statusMenu="matMenu" class="status-menu">
-            <button mat-menu-item
-              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.PENDING})"
-              [disabled]="order.status === OrderStatus.PENDING"
-              class="status-menu-item pending">
-              <mat-icon>schedule</mat-icon>
-              <span>Pendiente</span>
-            </button>
-            <button mat-menu-item
-              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.IN_PROGRESS})"
-              [disabled]="order.status === OrderStatus.IN_PROGRESS"
-              class="status-menu-item progress">
-              <mat-icon>hourglass_empty</mat-icon>
-              <span>En Progreso</span>
-            </button>
-            <button mat-menu-item 
-              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.READY})"
-              [disabled]="order.status === OrderStatus.READY"
-              class="status-menu-item ready">
-              <mat-icon>check_circle</mat-icon>
-              <span>Lista</span>
-            </button>
-            <button mat-menu-item
-              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.DELIVERED})"
-              [disabled]="order.status === OrderStatus.DELIVERED"
-              class="status-menu-item delivered">
-              <mat-icon>local_shipping</mat-icon>
-              <span>Entregada</span>
-            </button>
-            <button mat-menu-item
-              (click)="handleChangeOrderStatus({orderId: order.id, newStatus: OrderStatus.CANCELLED})"
-              [disabled]="order.status === OrderStatus.CANCELLED"
-              class="status-menu-item cancelled">
-              <mat-icon>cancel</mat-icon>
-              <span>Cancelada</span>
-            </button>
-          </mat-menu>
-
-          <button 
-            class="action-btn danger-btn" 
-            (click)="handleDeleteOrder(order.id)">
-            <mat-icon>delete</mat-icon>
-            Eliminar
-          </button>
-        </div>
-      </div>
-      }
-    </div>
-    }
-
-    <!-- Estado Vacío -->
-    @if (!loadingTableOrders && tableOrders.length === 0) {
-      <div class="empty-state-container">
-        <div class="empty-state-content">
-          <mat-icon class="empty-icon">info</mat-icon>
-          <h3 class="empty-title">No hay órdenes en la Mesa {{ mesaSeleccionada }}</h3>
-          <p class="empty-description">Esta mesa no tiene órdenes activas en este momento</p>
-          <button
-            class="modern-action-btn add-item-btn"
-            (click)="deseleccionarMesa()">
-            <mat-icon>arrow_back</mat-icon>
-            <span>Volver a las Mesas</span>
-          </button>
-        </div>
-      </div>
-    }
+      </ng-container>
   </div>
-  }
 </div>

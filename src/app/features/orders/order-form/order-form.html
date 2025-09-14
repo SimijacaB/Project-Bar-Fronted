@@ -15,11 +15,7 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="form-field">
                 <mat-label>Nombre del Cliente</mat-label>
-                <input
-                  matInput
-                  formControlName="clientName"
-                  placeholder="Ingrese el nombre del cliente"
-                />
+                <input matInput formControlName="clientName" placeholder="Ingrese el nombre del cliente" />
                 @if (orderForm.get('clientName')?.hasError('required')) {
                 <mat-error> El nombre del cliente es requerido </mat-error>
                 }
@@ -27,12 +23,7 @@
 
               <mat-form-field appearance="outline" class="form-field">
                 <mat-label>Número de Mesa</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  formControlName="tableNumber"
-                  placeholder="Ingrese el número de mesa"
-                />
+                <input matInput type="number" formControlName="tableNumber" placeholder="Ingrese el número de mesa" />
                 @if (orderForm.get('tableNumber')?.hasError('required')) {
                 <mat-error> El número de mesa es requerido </mat-error>
                 } @if (orderForm.get('tableNumber')?.hasError('min')) {
@@ -44,11 +35,7 @@
             <div class="form-row">
               <mat-form-field appearance="outline" class="form-field">
                 <mat-label>Nombre del Mesero</mat-label>
-                <input
-                  matInput
-                  formControlName="waiterUserName"
-                  placeholder="Ingrese el nombre del mesero"
-                />
+                <input matInput formControlName="waiterUserName" placeholder="Ingrese el nombre del mesero" />
                 @if (orderForm.get('waiterUserName')?.hasError('required')) {
                 <mat-error> El nombre del mesero es requerido </mat-error>
                 }
@@ -56,34 +43,24 @@
             </div>
 
             <div class="form-row">
-              <mat-form-field
-                appearance="outline"
-                class="form-field full-width"
-              >
+              <mat-form-field appearance="outline" class="form-field full-width">
                 <mat-label>Notas (Opcional)</mat-label>
-                <textarea
-                  matInput
-                  formControlName="notes"
-                  placeholder="Agregue notas adicionales para la orden"
-                  rows="3"
-                ></textarea>
+                <textarea matInput formControlName="notes" placeholder="Agregue notas adicionales para la orden"
+                  rows="3"></textarea>
               </mat-form-field>
             </div>
 
             <div class="form-actions">
-              <button type="button" mat-button (click)="onClose()">
+              <button type="button" mat-raised-button (click)="onClose()">
+                <mat-icon>close</mat-icon>
                 Cancelar
               </button>
-              <button type="button" mat-button (click)="resetForm()">
+              <button type="button" mat-raised-button (click)="resetForm()">
+                <mat-icon>refresh</mat-icon>
                 Limpiar
               </button>
-              <button
-                type="submit"
-                mat-raised-button
-                color="primary"
-                [disabled]="orderForm.invalid"
-              >
-                <mat-icon>add</mat-icon>
+              <button type="submit" mat-raised-button [disabled]="orderForm.invalid">
+                <mat-icon>add_circle</mat-icon>
                 Crear Orden
               </button>
             </div>

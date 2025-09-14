@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Order } from '../models';
 import { ORDER_STATUS_CONFIG, OrderStatusConfig } from '../../../shared/constants/order-status.config';
 import { OrderStatus } from '../../../shared/enums/order-status';
+import { CustomDropdown, DropdownOption } from '../../../shared/components/custom-dropdown/custom-dropdown';
 
 // Constantes para filtros de estado
 const ALL_ORDERS_FILTER = 'ALL';
@@ -28,7 +29,8 @@ const ALL_ORDERS_LABEL = 'Todas las órdenes';
         MatCardModule,
         MatProgressSpinnerModule,
         MatMenuModule,
-        MatTooltipModule
+        MatTooltipModule,
+        CustomDropdown
     ],
     templateUrl: './order-list.html',
     styleUrl: './order-list.css'
@@ -48,13 +50,44 @@ export class OrderList implements OnInit, OnChanges {
     // Estados disponibles
     readonly orderStatuses: OrderStatusConfig[] = ORDER_STATUS_CONFIG;
 
+    // Opciones para el dropdown
+    statusDropdownOptions: DropdownOption[] = [];
+
     // Columnas de la tabla
     readonly displayedColumns: string[] = ['id', 'clientName', 'tableNumber', 'status', 'valueToPay', 'date', 'actions'];
 
     constructor() { }
 
     ngOnInit(): void {
+        this.initializeStatusDropdownOptions();
         this.applyFilter();
+    }
+
+    private initializeStatusDropdownOptions(): void {
+        this.statusDropdownOptions = [
+            {
+                value: ALL_ORDERS_FILTER,
+                label: ALL_ORDERS_LABEL,
+                icon: 'list_alt'
+            },
+            ...this.orderStatuses.map(status => ({
+                value: status.value,
+                label: status.label,
+                icon: this.getStatusIcon(status.value),
+                color: status.color
+            }))
+        ];
+    }
+
+    private getStatusIcon(status: OrderStatus): string {
+        const iconMap: Record<OrderStatus, string> = {
+            [OrderStatus.PENDING]: 'pending',
+            [OrderStatus.IN_PROGRESS]: 'restaurant',
+            [OrderStatus.READY]: 'done_all',
+            [OrderStatus.DELIVERED]: 'local_shipping',
+            [OrderStatus.CANCELLED]: 'cancel'
+        };
+        return iconMap[status] || 'help';
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -122,6 +155,13 @@ export class OrderList implements OnInit, OnChanges {
         this.selectedStatusFilter = value;
         this.selectedStatusLabelValue = label;
         this.applyFilter();
+    }
+
+    onStatusFilterChange(value: string): void {
+        const option = this.statusDropdownOptions.find(opt => opt.value === value);
+        if (option) {
+            this.selectStatusFilter(value, option.label);
+        }
     }
 
     selectedStatusLabel(): string {

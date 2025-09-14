@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,7 +24,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     templateUrl: './order-form.html',
     styleUrl: './order-form.css'
 })
-export class OrderForm {
+export class OrderForm implements OnInit {
+    @Input() tableNumber?: number;
     @Output() createOrder = new EventEmitter<any>();
     @Output() close = new EventEmitter<void>();
 
@@ -40,6 +41,14 @@ export class OrderForm {
             waiterUserName: ['', Validators.required],
             notes: ['']
         });
+    }
+
+    ngOnInit() {
+        if (this.tableNumber) {
+            this.orderForm.patchValue({
+                tableNumber: this.tableNumber
+            });
+        }
     }
 
     onSubmit() {
